@@ -1,0 +1,5 @@
+# Mark opencode skills as vendored (excluded from GitHub language stats)
+.opencode/** linguist-vendored
+graphify-out/** linguist-vendored
+design-system/** linguist-vendored
+docs/** linguist-vendored
