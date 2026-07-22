@@ -1,0 +1,262 @@
+@model EventHub._02.Bussines.DTOs.EventoListDto
+@{
+    ViewBag.Title = Model.Nombre;
+}
+
+<div class="event-dashboard">
+    <!-- Event Banner -->
+    <div class="event-banner">
+        @if (!string.IsNullOrEmpty(Model.CoverPhotoUrl))
+        {
+            <div class="event-banner__bg" style="background-image: url('@Model.CoverPhotoUrl');"></div>
+            <div class="event-banner__content">
+                <div class="event-banner__info">
+                    <div class="event-banner__header">
+                        <h1>@Model.Nombre</h1>
+                        <span class="badge badge-@Model.Estado.ToLower()">@Model.Estado</span>
+                    </div>
+                    <div class="event-banner__meta">
+                        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> @Model.Codigo</span>
+                        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> @Model.ClienteNombre</span>
+                        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> @Model.VenueNombre</span>
+                    </div>
+                    <div class="event-banner__dates">
+                        <span>@Model.FechaInicio.ToString("dd/MM/yyyy") – @Model.FechaFin.ToString("dd/MM/yyyy")</span>
+                    </div>
+                </div>
+                <div class="event-banner__actions">
+                    <a href="@Url.Action("Index")" class="btn btn-outline btn-sm" style="border-color:rgba(255,255,255,0.3);color:#fff;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                        Volver
+                    </a>
+                    @if (Model.Estado != "Finalizado" && Model.Estado != "Cancelado")
+                    {
+                        <a href="@Url.Action("Tareas", new { id = Model.Id })" class="btn btn-outline btn-sm" style="background:#fff; color:var(--primary); border-color:#fff;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                            Tareas
+                        </a>
+                        <a href="@Url.Action("Edit", new { id = Model.Id })" class="btn btn-primary btn-sm">Editar</a>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="event-banner__bg event-banner__bg--placeholder"></div>
+            <div class="event-banner__content">
+                <div class="event-banner__info">
+                    <div class="event-banner__header">
+                        <h1>@Model.Nombre</h1>
+                        <span class="badge badge-@Model.Estado.ToLower()">@Model.Estado</span>
+                    </div>
+                    <div class="event-banner__meta">
+                        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> @Model.Codigo</span>
+                        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> @Model.ClienteNombre</span>
+                        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> @Model.VenueNombre</span>
+                    </div>
+                    <div class="event-banner__dates">
+                        <span>@Model.FechaInicio.ToString("dd/MM/yyyy") – @Model.FechaFin.ToString("dd/MM/yyyy")</span>
+                    </div>
+                </div>
+                <div class="event-banner__actions">
+                    <a href="@Url.Action("Index")" class="btn btn-outline btn-sm" style="border-color:rgba(255,255,255,0.3);color:#fff;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                        Volver
+                    </a>
+                    @if (Model.Estado != "Finalizado" && Model.Estado != "Cancelado")
+                    {
+                        <a href="@Url.Action("Tareas", new { id = Model.Id })" class="btn btn-outline btn-sm" style="background:#fff; color:var(--primary); border-color:#fff;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                            Tareas
+                        </a>
+                        <a href="@Url.Action("Edit", new { id = Model.Id })" class="btn btn-primary btn-sm">Editar</a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Event Details Cards -->
+    <div class="event-details-grid">
+        <div class="card">
+            <div class="card-header">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                <h3>Cliente</h3>
+            </div>
+            <div class="card-value">@Model.ClienteNombre</div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <h3>Lugar</h3>
+            </div>
+            <div class="card-value">@Model.VenueNombre</div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <h3>Tipo de Evento</h3>
+            </div>
+            <div class="card-value">@Model.TipoEvento</div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <h3>Presupuesto</h3>
+            </div>
+            <div class="card-value">@Model.PresupuestoEstimado.ToString("C2")</div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .event-dashboard {
+        margin: -24px -32px;
+    }
+
+    .event-banner {
+        position: relative;
+        width: 100%;
+        height: 320px;
+        min-height: 240px;
+        overflow: hidden;
+        background: var(--sidebar-bg);
+    }
+
+    .event-banner__bg {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .event-banner__bg--placeholder {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    }
+
+    .event-banner__content {
+        position: relative;
+        z-index: 1;
+        height: 100%;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        padding: 32px;
+        background: linear-gradient(to top, rgba(15,23,42,0.9) 0%, transparent 100%);
+        color: white;
+    }
+
+    .event-banner__header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .event-banner__header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .event-banner__meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: rgba(255,255,255,0.85);
+    }
+
+    .event-banner__meta span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .event-banner__dates {
+        font-size: 14px;
+        color: rgba(255,255,255,0.7);
+    }
+
+    .event-banner__actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .event-details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 16px;
+        padding: 32px;
+    }
+
+    .event-details-grid .card {
+        margin: 0;
+    }
+
+    .event-details-grid .card .card-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        color: var(--text-muted);
+    }
+
+    .event-details-grid .card .card-header h3 {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .event-details-grid .card .card-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    @@media (max-width: 768px) {
+        .event-banner {
+            height: 280px;
+        }
+
+        .event-banner__content {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 24px;
+        }
+
+        .event-banner__header h1 {
+            font-size: 22px;
+        }
+
+        .event-details-grid {
+            padding: 24px;
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .event-banner {
+            height: 240px;
+        }
+
+        .event-banner__header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .event-banner__meta {
+            flex-direction: column;
+            gap: 8px;
+        }
+    }
+</style>

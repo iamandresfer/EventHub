@@ -1,0 +1,1015 @@
+@model EventHub._02.Bussines.DTOs.EventoFormDto
+@{
+    ViewBag.Title = "Nuevo Evento";
+}
+
+<div class="page-header">
+    <h1>Nuevo Evento</h1>
+    <p>Ingrese los datos del evento</p>
+</div>
+
+@using (Html.BeginForm("Create", "Eventos", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="card">
+        <div class="form-group">
+            @Html.LabelFor(m => m.Nombre)
+            @Html.TextBoxFor(m => m.Nombre, new { @class = "form-control", placeholder = "Nombre del evento", maxlength = "150" })
+            @Html.ValidationMessageFor(m => m.Nombre, "", new { @class = "field-error" })
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    @Html.LabelFor(m => m.ClienteId)
+                    <a href="#" id="openClientModal" style="color:var(--primary);font-size:13px;font-weight:500;">+ Nuevo Cliente</a>
+                </div>
+                @Html.DropDownListFor(m => m.ClienteId, (SelectList)ViewBag.Clientes, "-- Seleccione --", new { @class = "form-control", id = "ClienteId" })
+                @Html.ValidationMessageFor(m => m.ClienteId, "", new { @class = "field-error" })
+            </div>
+            <div class="form-group">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    @Html.LabelFor(m => m.TipoEventoId)
+                    <a href="#" id="openTipoEventoModal" style="color:var(--primary);font-size:13px;font-weight:500;">+ Nuevo Tipo</a>
+                </div>
+                @Html.DropDownListFor(m => m.TipoEventoId, (SelectList)ViewBag.TiposEvento, "-- Seleccione --", new { @class = "form-control", id = "TipoEventoId" })
+                @Html.ValidationMessageFor(m => m.TipoEventoId, "", new { @class = "field-error" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div style="display:flex;align-items:center;gap:8px;">
+                @Html.LabelFor(m => m.VenueId)
+                <a href="#" id="openVenueModal" style="color:var(--primary);font-size:13px;font-weight:500;">+ Nuevo Lugar</a>
+            </div>
+            @Html.DropDownListFor(m => m.VenueId, (SelectList)ViewBag.Venues, "-- Seleccione --", new { @class = "form-control", id = "VenueId" })
+            @Html.ValidationMessageFor(m => m.VenueId, "", new { @class = "field-error" })
+        </div>
+
+        <div class="form-group">
+            <label style="margin-bottom: 12px; display: block; font-weight: 600;">Tipo de Evento</label>
+            <div class="duration-cards">
+                <label class="duration-card active" id="cardSingle">
+                    <input type="radio" name="durationType" value="single" checked style="display:none;" />
+                    <div class="card-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><rect x="8" y="14" width="8" height="4" rx="1"></rect></svg>
+                    </div>
+                    <div class="card-content">
+                        <h4>Día Único</h4>
+                        <p>El evento ocurre en una sola fecha.</p>
+                    </div>
+                </label>
+                <label class="duration-card" id="cardMulti">
+                    <input type="radio" name="durationType" value="multi" style="display:none;" />
+                    <div class="card-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><rect x="7" y="14" width="4" height="4" rx="1"></rect><rect x="13" y="14" width="4" height="4" rx="1"></rect></svg>
+                    </div>
+                    <div class="card-content">
+                        <h4>Múltiples Días</h4>
+                        <p>El evento se extiende por varios días.</p>
+                    </div>
+                </label>
+            </div>
+            <input type="hidden" name="EsVariosDias" id="EsVariosDias" value="false" />
+        </div>
+
+        <div id="singleDaySection" class="animated-section">
+            <div class="form-row">
+                <div class="form-group" style="flex: 2;">
+                    <label>Fecha del Evento *</label>
+                    <input type="date" name="FechaInicio" id="FechaInicio" class="form-control input-lg" required />
+                    <input type="hidden" name="FechaFin" id="FechaFinHidden" />
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Hora Inicio *</label>
+                    <input type="time" name="HoraInicio" id="HoraInicio" class="form-control input-lg" required />
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Hora Fin *</label>
+                    <input type="time" name="HoraFin" id="HoraFin" class="form-control input-lg" required />
+                </div>
+            </div>
+        </div>
+
+        <div id="multiDaySection" class="animated-section" style="display:none;">
+            <div class="multi-day-header">
+                <label style="margin:0; font-weight: 600;">Programación por Día</label>
+                <div class="toggle-switch-container">
+                    <span class="toggle-label">Mismo horario todos los días</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="sameScheduleAllDays" checked />
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div id="eventDaysContainer">
+                <div class="event-day-row" data-day="0">
+                    <div class="day-number-badge">Día 1</div>
+                    <div class="form-row" style="margin-bottom: 0;">
+                        <div class="form-group">
+                            <label>Fecha</label>
+                            <input type="date" name="Dias[0].Fecha" class="form-control day-date" />
+                        </div>
+                        <div class="form-group">
+                            <label>Hora Inicio</label>
+                            <input type="time" name="Dias[0].HoraInicio" class="form-control day-hora-inicio day1-sync" />
+                        </div>
+                        <div class="form-group">
+                            <label>Hora Fin</label>
+                            <input type="time" name="Dias[0].HoraFin" class="form-control day-hora-fin day1-sync" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="button" id="addDayBtn" class="btn btn-outline btn-add-day">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Agregar Día
+            </button>
+            
+            <div class="multi-day-summary">
+                <div class="summary-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
+                <div class="summary-text">
+                    <span id="multiDaySummaryText">Selecciona fechas para ver el resumen</span>
+                </div>
+                <input type="hidden" name="FechaInicio" id="MultiFechaInicio" disabled />
+                <input type="hidden" name="FechaFin" id="MultiFechaFin" disabled />
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top:16px;">
+            <label>Foto de Portada (16:9)</label>
+            <div class="cover-upload-container">
+                <div class="cover-upload" id="coverUpload">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    <p style="margin:8px 0 4px;font-size:14px;color:var(--text);">Arrastra o haz clic para subir</p>
+                    <p style="margin:0;font-size:12px;color:var(--text-muted);">Recomendado: 1920×1080px (16:9) • JPG/PNG/WebP • &lt;5MB</p>
+                </div>
+                <input type="file" id="coverFileInput" accept="image/*" style="display:none;" />
+                <input type="hidden" name="CoverPhotoUrl" id="CoverPhotoUrl" />
+            </div>
+            <div id="coverPreview" style="display:none;margin-top:12px;position:relative;">
+                <div class="cover-cinematic-frame">
+                    <img id="coverPreviewImg" />
+                </div>
+                <button type="button" id="removeCoverBtn" class="btn btn-danger btn-sm" style="position:absolute;top:8px;right:8px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.PresupuestoEstimado)
+            @Html.TextBoxFor(m => m.PresupuestoEstimado, "{0:F2}", new { @class = "form-control", type = "number", step = "0.01", min = "0.01" })
+            @Html.ValidationMessageFor(m => m.PresupuestoEstimado, "", new { @class = "field-error" })
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.Descripcion)
+            @Html.TextAreaFor(m => m.Descripcion, new { @class = "form-control", placeholder = "Descripción del evento...", maxlength = "1000" })
+        </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:16px;">
+        <button type="submit" class="btn btn-primary">Crear Evento</button>
+        <a href="@Url.Action("Index")" class="btn btn-outline">Cancelar</a>
+    </div>
+}
+
+<!-- Client Modal -->
+<div id="clientModal" class="modal-overlay" style="display:none;">
+    <div class="modal-panel">
+        <div class="modal-header">
+            <button type="button" id="closeClientModal" class="modal-close-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <h3>Nuevo Cliente</h3>
+        </div>
+        <div class="modal-body">
+            <form id="clientForm">
+                @Html.AntiForgeryToken()
+                <div class="form-group">
+                    <label>Nombre *</label>
+                    <input type="text" name="Nombre" class="form-control" required maxlength="150" />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>RUC *</label>
+                        <input type="text" name="Ruc" class="form-control" maxlength="13" required pattern="\d{13}" />
+                    </div>
+                    <div class="form-group">
+                        <label>Clasificación</label>
+                        <select name="Clasificacion" class="form-control">
+                            <option value="Nuevo">Nuevo</option>
+                            <option value="Regular">Regular</option>
+                            <option value="VIP">VIP</option>
+                            <option value="Estrategico">Estratégico</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" name="Email" class="form-control" required maxlength="100" />
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="text" name="Telefono" class="form-control" maxlength="20" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Contacto</label>
+                    <input type="text" name="Contacto" class="form-control" maxlength="150" placeholder="Nombre del representante" />
+                </div>
+                <div class="form-group">
+                    <label>Dirección</label>
+                    <input type="text" name="Direccion" class="form-control" maxlength="200" />
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="cancelClientModal" class="btn btn-outline">Cancelar</button>
+            <button type="button" id="saveClientBtn" class="btn btn-primary">Crear y Seleccionar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Venue Modal -->
+<div id="venueModal" class="modal-overlay" style="display:none;">
+    <div class="modal-panel">
+        <div class="modal-header">
+            <button type="button" id="closeVenueModal" class="modal-close-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <h3>Nuevo Lugar</h3>
+        </div>
+        <div class="modal-body">
+            <form id="venueForm">
+                @Html.AntiForgeryToken()
+                <div class="form-group">
+                    <label>Nombre *</label>
+                    <input type="text" name="Nombre" class="form-control" required maxlength="100" placeholder="Ej: Centro de Convenciones" />
+                </div>
+                <div class="form-group">
+                    <label>Dirección *</label>
+                    <input type="text" name="Direccion" class="form-control" required maxlength="200" />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Ciudad *</label>
+                        <input type="text" name="Ciudad" class="form-control" required maxlength="50" />
+                    </div>
+                    <div class="form-group">
+                        <label>Capacidad Máxima</label>
+                        <input type="number" name="CapacidadMaxima" class="form-control" min="1" />
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="cancelVenueModal" class="btn btn-outline">Cancelar</button>
+            <button type="button" id="saveVenueBtn" class="btn btn-primary">Crear y Seleccionar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Tipo Evento Modal -->
+<div id="tipoEventoModal" class="modal-overlay" style="display:none;">
+    <div class="modal-panel">
+        <div class="modal-header">
+            <button type="button" id="closeTipoEventoModal" class="modal-close-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <h3>Nuevo Tipo de Evento</h3>
+        </div>
+        <div class="modal-body">
+            <form id="tipoEventoForm">
+                @Html.AntiForgeryToken()
+                <div class="form-group">
+                    <label>Nombre *</label>
+                    <input type="text" name="Nombre" class="form-control" required maxlength="50" placeholder="Ej: Conferencia, Festival, Gala..." />
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <input type="text" name="Descripcion" class="form-control" maxlength="200" placeholder="Breve descripción del tipo de evento" />
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" id="cancelTipoEventoModal" class="btn btn-outline">Cancelar</button>
+            <button type="button" id="saveTipoEventoBtn" class="btn btn-primary">Crear y Seleccionar</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Duration Cards */
+    .duration-cards {
+        display: flex;
+        gap: 16px;
+    }
+    .duration-card {
+        flex: 1;
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 16px 20px;
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: var(--bg-card);
+    }
+    .duration-card:hover {
+        border-color: #cbd5e1;
+        background: var(--bg);
+        transform: translateY(-2px);
+    }
+    .duration-card.active {
+        border-color: var(--primary);
+        background: var(--primary-light, #f0f9ff);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .duration-card .card-icon {
+        color: var(--text-muted);
+        background: var(--bg);
+        padding: 10px;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+    }
+    .duration-card.active .card-icon {
+        color: var(--primary);
+        background: rgba(59, 130, 246, 0.1);
+    }
+    .duration-card .card-content h4 {
+        margin: 0 0 4px 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text);
+    }
+    .duration-card .card-content p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.4;
+    }
+    
+    /* Toggle Switch */
+    .multi-day-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border);
+    }
+    .toggle-switch-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .toggle-label {
+        font-size: 14px;
+        color: var(--text);
+        font-weight: 500;
+    }
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+    }
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #cbd5e1;
+        transition: .3s;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .3s;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .toggle-switch input:checked + .slider {
+        background-color: var(--primary);
+    }
+    .toggle-switch input:checked + .slider:before {
+        transform: translateX(20px);
+    }
+    .slider.round {
+        border-radius: 24px;
+    }
+    .slider.round:before {
+        border-radius: 50%;
+    }
+    
+    /* Multi Day Section */
+    .event-day-row {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px 16px 16px 48px;
+        margin-bottom: 12px;
+        position: relative;
+        transition: all 0.2s;
+    }
+    .event-day-row:hover {
+        border-color: #cbd5e1;
+    }
+    .day-number-badge {
+        position: absolute;
+        left: -1px;
+        top: 16px;
+        background: var(--primary);
+        color: white;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 0 4px 4px 0;
+        letter-spacing: 0.5px;
+    }
+    .event-day-row .remove-day {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+    .event-day-row .remove-day:hover {
+        color: #dc2626;
+        background: #fee2e2;
+    }
+    .btn-add-day {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px;
+        border-style: dashed;
+        border-width: 2px;
+        margin-top: 8px;
+        background: transparent;
+    }
+    .btn-add-day:hover {
+        background: var(--primary-light, #f0f9ff);
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+    .readonly-input {
+        background-color: var(--bg) !important;
+        color: var(--text-muted);
+        cursor: not-allowed;
+        opacity: 0.8;
+    }
+    
+    /* Multi Day Summary */
+    .multi-day-summary {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 24px;
+        padding: 16px;
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        border-radius: 12px;
+        color: #065f46;
+    }
+    .multi-day-summary .summary-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #10b981;
+    }
+    .multi-day-summary .summary-text {
+        font-size: 14px;
+        font-weight: 500;
+    }
+    .input-lg {
+        padding: 12px 16px;
+        font-size: 15px;
+    }
+    
+    /* Animations */
+    .animated-section {
+        animation: fadeInDown 0.3s ease-out forwards;
+    }
+    @@keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .cover-upload {
+        border: 2px dashed var(--border);
+        border-radius: 12px;
+        padding: 32px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .cover-upload:hover {
+        border-color: var(--primary);
+        background: var(--primary-light);
+    }
+    .cover-cinematic-frame {
+        width: 100%;
+        aspect-ratio: 16 / 7;
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+        background: #000;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    }
+    .cover-cinematic-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 36%;
+        display: block;
+    }
+    .cover-cinematic-frame::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 12px;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+        pointer-events: none;
+    }
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.5);
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0;
+    }
+    .modal-panel {
+        width: 480px;
+        max-width: 100vw;
+        height: 100vh;
+        background: var(--bg-card);
+        display: flex;
+        flex-direction: column;
+        animation: slideIn 0.25s ease;
+    }
+    @@keyframes slideIn {
+        from { transform: translateX(100%); }
+        to { transform: translateX(0); }
+    }
+    .modal-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border);
+    }
+    .modal-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+    }
+    .modal-close-btn {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+    }
+    .modal-close-btn:hover {
+        color: var(--text);
+        background: var(--bg);
+    }
+    .modal-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+    }
+    .modal-footer {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        padding: 16px 24px;
+        border-top: 1px solid var(--border);
+    }
+</style>
+
+@section scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        // ===== Duration toggle =====
+        var durationRadios = document.querySelectorAll('input[name="durationType"]');
+        var cardSingle = document.getElementById('cardSingle');
+        var cardMulti = document.getElementById('cardMulti');
+        var singleDaySection = document.getElementById('singleDaySection');
+        var multiDaySection = document.getElementById('multiDaySection');
+        var esVariosDiasInput = document.getElementById('EsVariosDias');
+        var dayCounter = 1;
+
+        var today = new Date();
+        var todayStr = today.toISOString().split('T')[0];
+        document.getElementById('FechaInicio').value = todayStr;
+        document.getElementById('FechaFinHidden').value = todayStr;
+        
+        var firstDayDateInput = document.querySelector('#eventDaysContainer .day-date');
+        if (firstDayDateInput) {
+            firstDayDateInput.value = todayStr;
+        }
+
+        durationRadios.forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                if (this.value === 'single') {
+                    cardSingle.classList.add('active');
+                    cardMulti.classList.remove('active');
+                    singleDaySection.style.display = 'block';
+                    multiDaySection.style.display = 'none';
+                    esVariosDiasInput.value = 'false';
+                    document.getElementById('FechaInicio').disabled = false;
+                    document.getElementById('FechaFinHidden').disabled = false;
+                    document.getElementById('MultiFechaInicio').disabled = true;
+                    document.getElementById('MultiFechaFin').disabled = true;
+                } else {
+                    cardMulti.classList.add('active');
+                    cardSingle.classList.remove('active');
+                    singleDaySection.style.display = 'none';
+                    multiDaySection.style.display = 'block';
+                    esVariosDiasInput.value = 'true';
+                    document.getElementById('FechaInicio').disabled = true;
+                    document.getElementById('FechaFinHidden').disabled = true;
+                    document.getElementById('MultiFechaInicio').disabled = false;
+                    document.getElementById('MultiFechaFin').disabled = false;
+                    syncMultiDayDates();
+                }
+            });
+        });
+
+        // Single day: set FechaFin to same as FechaInicio
+        var fechaInicio = document.getElementById('FechaInicio');
+        var fechaFinHidden = document.getElementById('FechaFinHidden');
+        fechaInicio.addEventListener('change', function() {
+            fechaFinHidden.value = fechaInicio.value;
+        });
+
+        // ===== Multi-day: add/remove days & sync dates/times =====
+        var addDayBtn = document.getElementById('addDayBtn');
+        var eventDaysContainer = document.getElementById('eventDaysContainer');
+        var sameSchedule = document.getElementById('sameScheduleAllDays');
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            var options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            var date = new Date(dateString + 'T00:00:00'); // Prevent timezone shift
+            return date.toLocaleDateString('es-ES', options);
+        }
+
+        function syncMultiDayDates() {
+            var rows = document.querySelectorAll('.event-day-row');
+            if (rows.length === 0) {
+                document.getElementById('multiDaySummaryText').innerText = 'Selecciona fechas para ver el resumen';
+                return;
+            }
+            var dates = [];
+            rows.forEach(function(row) {
+                var d = row.querySelector('.day-date').value;
+                if (d) dates.push(d);
+            });
+            if (dates.length > 0) {
+                dates.sort();
+                var start = dates[0];
+                var end = dates[dates.length - 1];
+                document.getElementById('MultiFechaInicio').value = start;
+                document.getElementById('MultiFechaFin').value = end;
+                
+                if (start === end) {
+                    document.getElementById('multiDaySummaryText').innerText = 'El evento será el ' + formatDate(start);
+                } else {
+                    document.getElementById('multiDaySummaryText').innerText = 'El evento será del ' + formatDate(start) + ' al ' + formatDate(end) + ' (' + dates.length + ' días)';
+                }
+            } else {
+                document.getElementById('multiDaySummaryText').innerText = 'Selecciona fechas para ver el resumen';
+            }
+        }
+
+        function syncMultiDayTimes() {
+            if (!sameSchedule.checked) return;
+            var rows = document.querySelectorAll('.event-day-row');
+            if (rows.length > 0) {
+                var firstRow = rows[0];
+                var hInicio = firstRow.querySelector('.day-hora-inicio').value;
+                var hFin = firstRow.querySelector('.day-hora-fin').value;
+                rows.forEach(function(row, i) {
+                    if (i > 0) {
+                        row.querySelector('.day-hora-inicio').value = hInicio;
+                        row.querySelector('.day-hora-fin').value = hFin;
+                    }
+                });
+            }
+        }
+
+        function updateTimeInputsState() {
+            var rows = document.querySelectorAll('.event-day-row');
+            var isChecked = sameSchedule.checked;
+            rows.forEach(function(row, i) {
+                if (i > 0) {
+                    var hiInput = row.querySelector('.day-hora-inicio');
+                    var hfInput = row.querySelector('.day-hora-fin');
+                    if (isChecked) {
+                        hiInput.setAttribute('readonly', 'readonly');
+                        hfInput.setAttribute('readonly', 'readonly');
+                        hiInput.classList.add('readonly-input');
+                        hfInput.classList.add('readonly-input');
+                    } else {
+                        hiInput.removeAttribute('readonly');
+                        hfInput.removeAttribute('readonly');
+                        hiInput.classList.remove('readonly-input');
+                        hfInput.classList.remove('readonly-input');
+                    }
+                }
+            });
+            syncMultiDayTimes();
+        }
+
+        // Add event listeners to day 1 to sync automatically when typing
+        document.querySelectorAll('.day1-sync').forEach(function(input) {
+            input.addEventListener('input', syncMultiDayTimes);
+        });
+
+        addDayBtn.addEventListener('click', function() {
+            var rows = document.querySelectorAll('.event-day-row');
+            var lastDateStr = '';
+            if (rows.length > 0) {
+                lastDateStr = rows[rows.length - 1].querySelector('.day-date').value;
+            }
+            
+            var newDateStr = '';
+            if (lastDateStr) {
+                var lastDate = new Date(lastDateStr + 'T00:00:00');
+                lastDate.setDate(lastDate.getDate() + 1);
+                newDateStr = lastDate.toISOString().split('T')[0];
+            }
+            
+            var displayDay = rows.length + 1;
+            var html = '<div class="event-day-row" data-day="' + dayCounter + '">' +
+                '<div class="day-number-badge">Día ' + displayDay + '</div>' +
+                '<button type="button" class="remove-day" title="Eliminar día"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
+                '<div class="form-row" style="margin-bottom: 0;">' +
+                '<div class="form-group"><label>Fecha</label><input type="date" name="Dias[' + dayCounter + '].Fecha" class="form-control day-date" value="' + newDateStr + '" /></div>' +
+                '<div class="form-group"><label>Hora Inicio</label><input type="time" name="Dias[' + dayCounter + '].HoraInicio" class="form-control day-hora-inicio" /></div>' +
+                '<div class="form-group"><label>Hora Fin</label><input type="time" name="Dias[' + dayCounter + '].HoraFin" class="form-control day-hora-fin" /></div>' +
+                '</div></div>';
+                
+            eventDaysContainer.insertAdjacentHTML('beforeend', html);
+            dayCounter++;
+            attachRemoveDayListeners();
+            attachDayDateListeners();
+            updateTimeInputsState();
+            syncMultiDayDates();
+        });
+
+        function updateDayBadges() {
+            var rows = document.querySelectorAll('.event-day-row');
+            rows.forEach(function(row, index) {
+                var badge = row.querySelector('.day-number-badge');
+                if (badge) {
+                    badge.innerText = 'Día ' + (index + 1);
+                }
+            });
+        }
+
+        function attachRemoveDayListeners() {
+            document.querySelectorAll('.remove-day').forEach(function(btn) {
+                btn.onclick = function() {
+                    btn.closest('.event-day-row').remove();
+                    updateDayBadges();
+                    syncMultiDayDates();
+                };
+            });
+        }
+
+        function attachDayDateListeners() {
+            document.querySelectorAll('.day-date').forEach(function(input) {
+                input.removeEventListener('change', syncMultiDayDates);
+                input.addEventListener('change', syncMultiDayDates);
+            });
+        }
+
+        sameSchedule.addEventListener('change', updateTimeInputsState);
+
+        attachRemoveDayListeners();
+        attachDayDateListeners();
+        updateTimeInputsState();
+        syncMultiDayDates();
+
+        // ===== Cover upload (async to server) =====
+        var coverUpload = document.getElementById('coverUpload');
+        var coverFileInput = document.getElementById('coverFileInput');
+        var coverPreview = document.getElementById('coverPreview');
+        var coverPreviewImg = document.getElementById('coverPreviewImg');
+        var removeCoverBtn = document.getElementById('removeCoverBtn');
+
+        coverUpload.addEventListener('click', function() {
+            coverFileInput.click();
+        });
+
+        coverUpload.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            coverUpload.style.borderColor = 'var(--primary)';
+            coverUpload.style.background = 'var(--primary-light)';
+        });
+
+        coverUpload.addEventListener('dragleave', function() {
+            coverUpload.style.borderColor = '';
+            coverUpload.style.background = '';
+        });
+
+        coverUpload.addEventListener('drop', function(e) {
+            e.preventDefault();
+            coverUpload.style.borderColor = '';
+            coverUpload.style.background = '';
+            if (e.dataTransfer.files.length > 0) {
+                handleCoverFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        coverFileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                handleCoverFile(this.files[0]);
+            }
+        });
+
+        function handleCoverFile(file) {
+            if (!file.type.startsWith('image/')) return;
+            if (file.size > 5 * 1024 * 1024) {
+                alert('El archivo debe ser menor a 5MB');
+                return;
+            }
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                coverPreviewImg.src = e.target.result;
+                coverPreview.style.display = 'block';
+                coverUpload.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+
+            var fd = new FormData();
+            fd.append('file', file);
+            var token = document.querySelector('input[name="__RequestVerificationToken"]');
+            if (token) fd.append('__RequestVerificationToken', token.value);
+
+            fetch('@Url.Action("UploadCover", "Eventos")', {
+                method: 'POST',
+                body: fd
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    document.getElementById('CoverPhotoUrl').value = data.url;
+                } else {
+                    alert(data.message || 'Error al subir la imagen');
+                }
+            })
+            .catch(function() {
+                alert('Error de conexión al subir imagen');
+            });
+        }
+
+        removeCoverBtn.addEventListener('click', function() {
+            coverPreview.style.display = 'none';
+            coverUpload.style.display = 'block';
+            coverFileInput.value = '';
+            document.getElementById('CoverPhotoUrl').value = '';
+        });
+
+        // ===== Helper: open/close modal + POST form =====
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+        function closeModalFn(modalId, formId) {
+            document.getElementById(modalId).style.display = 'none';
+            document.getElementById(formId).reset();
+        }
+        function postFormAjax(url, formId, onSuccess) {
+            var form = document.getElementById(formId);
+            var fd = new FormData(form);
+            fetch(url, { method: 'POST', body: fd })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    onSuccess(data);
+                } else {
+                    alert(data.message || 'Error al guardar');
+                }
+            })
+            .catch(function() {
+                alert('Error de conexión');
+            });
+        }
+
+        // ===== Client Modal =====
+        var clientModal = document.getElementById('clientModal');
+        document.getElementById('openClientModal').addEventListener('click', function(e) {
+            e.preventDefault();
+            openModal('clientModal');
+        });
+        document.getElementById('closeClientModal').addEventListener('click', function() { closeModalFn('clientModal', 'clientForm'); });
+        document.getElementById('cancelClientModal').addEventListener('click', function() { closeModalFn('clientModal', 'clientForm'); });
+        clientModal.addEventListener('click', function(e) { if (e.target === clientModal) closeModalFn('clientModal', 'clientForm'); });
+
+        document.getElementById('saveClientBtn').addEventListener('click', function() {
+            var form = document.getElementById('clientForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            postFormAjax('@Url.Action("CreateAjax", "Clientes")', 'clientForm', function(data) {
+                var sel = document.getElementById('ClienteId');
+                var opt = document.createElement('option');
+                opt.value = data.clienteId;
+                opt.text = data.nombre;
+                opt.selected = true;
+                sel.add(opt);
+                closeModalFn('clientModal', 'clientForm');
+            });
+        });
+
+        // ===== Venue Modal =====
+        var venueModal = document.getElementById('venueModal');
+        document.getElementById('openVenueModal').addEventListener('click', function(e) {
+            e.preventDefault();
+            openModal('venueModal');
+        });
+        document.getElementById('closeVenueModal').addEventListener('click', function() { closeModalFn('venueModal', 'venueForm'); });
+        document.getElementById('cancelVenueModal').addEventListener('click', function() { closeModalFn('venueModal', 'venueForm'); });
+        venueModal.addEventListener('click', function(e) { if (e.target === venueModal) closeModalFn('venueModal', 'venueForm'); });
+
+        document.getElementById('saveVenueBtn').addEventListener('click', function() {
+            var form = document.getElementById('venueForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            postFormAjax('@Url.Action("CreateVenueAjax", "Eventos")', 'venueForm', function(data) {
+                var sel = document.getElementById('VenueId');
+                var opt = document.createElement('option');
+                opt.value = data.venueId;
+                opt.text = data.nombre;
+                opt.selected = true;
+                sel.add(opt);
+                closeModalFn('venueModal', 'venueForm');
+            });
+        });
+
+        // ===== Tipo Evento Modal =====
+        var tipoModal = document.getElementById('tipoEventoModal');
+        document.getElementById('openTipoEventoModal').addEventListener('click', function(e) {
+            e.preventDefault();
+            openModal('tipoEventoModal');
+        });
+        document.getElementById('closeTipoEventoModal').addEventListener('click', function() { closeModalFn('tipoEventoModal', 'tipoEventoForm'); });
+        document.getElementById('cancelTipoEventoModal').addEventListener('click', function() { closeModalFn('tipoEventoModal', 'tipoEventoForm'); });
+        tipoModal.addEventListener('click', function(e) { if (e.target === tipoModal) closeModalFn('tipoEventoModal', 'tipoEventoForm'); });
+
+        document.getElementById('saveTipoEventoBtn').addEventListener('click', function() {
+            var form = document.getElementById('tipoEventoForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            postFormAjax('@Url.Action("CreateTipoEventoAjax", "Eventos")', 'tipoEventoForm', function(data) {
+                var sel = document.getElementById('TipoEventoId');
+                var opt = document.createElement('option');
+                opt.value = data.tipoEventoId;
+                opt.text = data.nombre;
+                opt.selected = true;
+                sel.add(opt);
+                closeModalFn('tipoEventoModal', 'tipoEventoForm');
+            });
+        });
+    </script>
+}

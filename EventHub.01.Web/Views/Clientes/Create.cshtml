@@ -1,0 +1,65 @@
+@model EventHub._02.Bussines.DTOs.ClienteDto
+@{
+    ViewBag.Title = "Nuevo Cliente";
+}
+
+<div class="page-header">
+    <h1>Nuevo Cliente</h1>
+    <p>Ingrese los datos del cliente</p>
+</div>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="card" style="max-width:600px;">
+        <div class="form-group">
+            @Html.LabelFor(m => m.Nombre)
+            @Html.TextBoxFor(m => m.Nombre, new { @class = "form-control", placeholder = "Nombre o Razón Social" })
+            @Html.ValidationMessageFor(m => m.Nombre, "", new { @class = "field-error" })
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.Contacto)
+            @Html.TextBoxFor(m => m.Contacto, new { @class = "form-control", placeholder = "Nombre del Contacto" })
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                @Html.LabelFor(m => m.Ruc)
+                @Html.TextBoxFor(m => m.Ruc, new { @class = "form-control", placeholder = "0000000000000", maxlength = "13" })
+                @Html.ValidationMessageFor(m => m.Ruc, "", new { @class = "field-error" })
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.Clasificacion)
+                @Html.DropDownListFor(m => m.Clasificacion, new SelectList(new[] { "Nuevo", "Regular", "VIP", "Estrategico" }), new { @class = "form-control" })
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                @Html.LabelFor(m => m.Email)
+                @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "email@cliente.com", type = "email" })
+                @Html.ValidationMessageFor(m => m.Email, "", new { @class = "field-error" })
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.Telefono)
+                @Html.TextBoxFor(m => m.Telefono, new { @class = "form-control", placeholder = "Teléfono" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.Direccion)
+            @Html.TextBoxFor(m => m.Direccion, new { @class = "form-control", placeholder = "Dirección" })
+        </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:16px;">
+        <button type="submit" class="btn btn-primary">Crear Cliente</button>
+        <a href="@Url.Action("Index")" class="btn btn-outline">Cancelar</a>
+    </div>
+}
+
+@section scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

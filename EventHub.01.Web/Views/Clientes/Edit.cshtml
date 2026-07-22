@@ -1,0 +1,66 @@
+@model EventHub._02.Bussines.DTOs.ClienteDto
+@{
+    ViewBag.Title = "Editar Cliente";
+}
+
+<div class="page-header">
+    <h1>Editar Cliente</h1>
+    <p>Modifique los datos del cliente</p>
+</div>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.Id)
+
+    <div class="card" style="max-width:600px;">
+        <div class="form-group">
+            @Html.LabelFor(m => m.RazonSocial)
+            @Html.TextBoxFor(m => m.RazonSocial, new { @class = "form-control" })
+            @Html.ValidationMessageFor(m => m.RazonSocial, "", new { @class = "field-error" })
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.NombreComercial)
+            @Html.TextBoxFor(m => m.NombreComercial, new { @class = "form-control" })
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                @Html.LabelFor(m => m.Ruc)
+                @Html.TextBoxFor(m => m.Ruc, new { @class = "form-control", maxlength = "13" })
+                @Html.ValidationMessageFor(m => m.Ruc, "", new { @class = "field-error" })
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.Clasificacion)
+                @Html.DropDownListFor(m => m.Clasificacion, new SelectList(new[] { "Nuevo", "Regular", "VIP", "Estrategico" }), new { @class = "form-control" })
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                @Html.LabelFor(m => m.EmailPrincipal)
+                @Html.TextBoxFor(m => m.EmailPrincipal, new { @class = "form-control", type = "email" })
+                @Html.ValidationMessageFor(m => m.EmailPrincipal, "", new { @class = "field-error" })
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.TelefonoPrincipal)
+                @Html.TextBoxFor(m => m.TelefonoPrincipal, new { @class = "form-control" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(m => m.DireccionFiscal)
+            @Html.TextBoxFor(m => m.DireccionFiscal, new { @class = "form-control" })
+        </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:16px;">
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        <a href="@Url.Action("Index")" class="btn btn-outline">Cancelar</a>
+    </div>
+}
+
+@section scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

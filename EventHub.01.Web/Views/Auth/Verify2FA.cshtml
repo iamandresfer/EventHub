@@ -1,0 +1,38 @@
+﻿@model EventHub._01.Web.Models.VerifyOtpViewModel
+
+@{
+    ViewBag.Title = "Verificación en Dos Pasos";
+}
+
+<p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px;">
+    Hemos enviado un código de verificación de 6 dígitos a tu correo electrónico.
+    Ingresa el código debajo para continuar.
+</p>
+
+@if (TempData["OtpResent"] != null)
+{
+    <div class="alert-success" style="font-size: 13px;">Nuevo código enviado a tu correo.</div>
+}
+
+@using (Html.BeginForm("Verify2FA", "Auth", FormMethod.Post, new { role = "form" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.UserId)
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Code)
+        @Html.TextBoxFor(m => m.Code, new { @class = "", placeholder = "000000", autocomplete = "one-time-code", autofocus = "", style = "font-size: 24px; letter-spacing: 8px; text-align: center; font-weight: 600;", maxlength = "6", inputmode = "numeric", pattern = "[0-9]*" })
+        @Html.ValidationMessageFor(m => m.Code, "", new { @class = "text-danger", style = "font-size: 12px; margin-top: 4px; display: block;" })
+    </div>
+
+    <button type="submit" class="btn-primary">Verificar</button>
+}
+
+@section AuthFooter {
+    <p style="margin-bottom: 8px;">¿No recibiste el código?</p>
+    @using (Html.BeginForm("ResendOtp", "Auth", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn-link">Reenviar código</button>
+    }
+}

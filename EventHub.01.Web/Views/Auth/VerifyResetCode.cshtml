@@ -1,0 +1,27 @@
+@model EventHub._01.Web.Models.VerifyResetOtpViewModel
+
+@{
+    ViewBag.Title = "Verificar Código";
+}
+
+<p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px;">
+    Ingresa el código de 4 dígitos que enviamos a tu correo electrónico.
+</p>
+
+@using (Html.BeginForm("VerifyResetCode", "Auth", FormMethod.Post, new { role = "form" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.Email)
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Code)
+        @Html.TextBoxFor(m => m.Code, new { @class = "", placeholder = "0000", autofocus = "", style = "font-size: 24px; letter-spacing: 8px; text-align: center; font-weight: 600;", maxlength = "4", inputmode = "numeric", pattern = "[0-9]*" })
+        @Html.ValidationMessageFor(m => m.Code, "", new { @class = "text-danger", style = "font-size: 12px; margin-top: 4px; display: block;" })
+    </div>
+
+    <button type="submit" class="btn-primary">Verificar Código</button>
+}
+
+@section AuthFooter {
+    <p>@Html.ActionLink("Volver al inicio de sesión", "Login")</p>
+}

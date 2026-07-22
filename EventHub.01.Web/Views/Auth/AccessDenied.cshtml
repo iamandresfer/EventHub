@@ -1,0 +1,18 @@
+﻿@{
+    ViewBag.Title = "Acceso Denegado";
+}
+
+<div style="text-align: center; padding: 40px 0;">
+    <div style="font-size: 64px; margin-bottom: 16px;">🔒</div>
+    <h2 style="margin-bottom: 12px; color: var(--text-primary);">Acceso Denegado</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 24px;">
+        No tienes permisos para acceder a esta página.
+    </p>
+    <a href="@Url.Action("Index", "Home")" class="btn-primary" style="display: inline-block; width: auto; padding: 12px 32px; text-decoration: none; color: white;">
+        Volver al Inicio
+    </a>
+</div>
+
+@section AuthFooter {
+    <p>@Html.ActionLink("Iniciar sesión con otra cuenta", "Login")</p>
+}

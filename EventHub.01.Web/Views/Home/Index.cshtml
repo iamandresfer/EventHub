@@ -1,0 +1,68 @@
+﻿@model EventHub._02.Bussines.DTOs.DashboardDto
+@{
+    ViewBag.Title = "Dashboard";
+}
+
+<div class="page-header">
+    <h1>Dashboard</h1>
+    <p>Resumen general del sistema</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">@Model.TotalEventos</div>
+        <div class="stat-label">Total Eventos</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">@Model.EventosActivos</div>
+        <div class="stat-label">Eventos Activos</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">@Model.EventosPlanificacion</div>
+        <div class="stat-label">En Planificación</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">@Model.EventosEjecucion</div>
+        <div class="stat-label">En Ejecución</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">@Model.TotalClientes</div>
+        <div class="stat-label">Total Clientes</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">@Model.ClientesActivos</div>
+        <div class="stat-label">Clientes Activos</div>
+    </div>
+</div>
+
+@if (Model.ProximosEventos.Count > 0)
+{
+    <h3 style="font-size:18px;font-weight:700;margin-bottom:12px;">Próximos Eventos</h3>
+    <div class="card" style="padding:0;overflow:hidden;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Evento</th>
+                    <th>Cliente</th>
+                    <th>Lugar</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var e in Model.ProximosEventos)
+                {
+                    <tr>
+                        <td style="font-weight:600;font-size:13px;">@e.Codigo</td>
+                        <td><a href="@Url.Action("Details", "Eventos", new { id = e.Id })" style="color:var(--primary);text-decoration:none;font-weight:600;">@e.Nombre</a></td>
+                        <td>@e.ClienteNombre</td>
+                        <td>@e.VenueNombre</td>
+                        <td>@e.FechaInicio.ToString("dd/MM/yyyy")</td>
+                        <td><span class="badge badge-@e.Estado.ToLower()">@e.Estado</span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

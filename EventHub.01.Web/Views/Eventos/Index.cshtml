@@ -1,0 +1,222 @@
+@model List<EventHub._02.Bussines.DTOs.EventoListDto>
+@{
+    ViewBag.Title = "Eventos";
+}
+
+<div class="page-header">
+    <h1>Eventos</h1>
+    <p>Gestión de eventos de producción</p>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div style="background:#d1fae5;border:1px solid #059669;border-radius:8px;padding:12px 16px;color:#065f46;font-size:14px;margin-bottom:16px;">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+<div class="action-bar">
+    <div class="search-box">
+        <form method="get" class="flex gap-2 items-center">
+            <input type="text" name="search" class="form-control" placeholder="Buscar eventos..." value="@ViewBag.Search" style="width:240px" />
+            <select name="estado" class="form-control" style="width:auto;">
+                <option value="">Todos los estados</option>
+                <option value="Planificacion" @(ViewBag.Estado == "Planificacion" ? "selected" : "")>Planificación</option>
+                <option value="PreProduccion" @(ViewBag.Estado == "PreProduccion" ? "selected" : "")>Pre-Producción</option>
+                <option value="Ejecucion" @(ViewBag.Estado == "Ejecucion" ? "selected" : "")>Ejecución</option>
+                <option value="Finalizado" @(ViewBag.Estado == "Finalizado" ? "selected" : "")>Finalizado</option>
+                <option value="Cancelado" @(ViewBag.Estado == "Cancelado" ? "selected" : "")>Cancelado</option>
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm">Buscar</button>
+        </form>
+    </div>
+    <a href="@Url.Action("Create")" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nuevo Evento
+    </a>
+</div>
+
+<div class="card" style="padding:0;overflow:hidden;">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Evento</th>
+                <th>Cliente</th>
+                <th>Lugar</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Presupuesto</th>
+                <th style="text-align:right;">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Count == 0)
+            {
+                <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted);">No hay eventos registrados</td></tr>
+            }
+            @foreach (var item in Model)
+            {
+                <tr class="event-row" data-href="@Url.Action("Details", new { id = item.Id })" style="cursor:pointer;">
+                    <td style="font-weight:600;font-size:13px;">@item.Codigo</td>
+                    <td><a href="@Url.Action("Details", new { id = item.Id })" style="color:var(--primary);text-decoration:none;font-weight:600;">@item.Nombre</a></td>
+                    <td>@item.ClienteNombre</td>
+                    <td>@item.VenueNombre</td>
+                    <td>@item.FechaInicio.ToString("dd/MM/yyyy")</td>
+                    <td>
+                        <div class="status-dropdown" data-id="@item.Id">
+                            <button type="button" class="status-btn badge badge-@item.Estado.ToLower()">@item.Estado</button>
+                            <div class="status-dropdown-menu" style="display:none;">
+                                @if (item.Estado != "Planificacion")
+                                {
+                                    <form method="post" action="@Url.Action("CambiarEstado")" style="margin:0;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="hidden" name="estado" value="Planificacion" />
+                                        <button type="submit" class="status-option">Planificación</button>
+                                    </form>
+                                }
+                                @if (item.Estado != "PreProduccion")
+                                {
+                                    <form method="post" action="@Url.Action("CambiarEstado")" style="margin:0;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="hidden" name="estado" value="PreProduccion" />
+                                        <button type="submit" class="status-option">Pre-Producción</button>
+                                    </form>
+                                }
+                                @if (item.Estado != "Ejecucion")
+                                {
+                                    <form method="post" action="@Url.Action("CambiarEstado")" style="margin:0;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="hidden" name="estado" value="Ejecucion" />
+                                        <button type="submit" class="status-option">Ejecución</button>
+                                    </form>
+                                }
+                                @if (item.Estado != "Finalizado")
+                                {
+                                    <form method="post" action="@Url.Action("CambiarEstado")" style="margin:0;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="hidden" name="estado" value="Finalizado" />
+                                        <button type="submit" class="status-option">Finalizado</button>
+                                    </form>
+                                }
+                                @if (item.Estado != "Cancelado")
+                                {
+                                    <form method="post" action="@Url.Action("CambiarEstado")" style="margin:0;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="hidden" name="estado" value="Cancelado" />
+                                        <button type="submit" class="status-option" style="color:#dc2626;">Cancelado</button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    </td>
+                    <td>@item.PresupuestoEstimado.ToString("C2")</td>
+                    <td style="text-align:right;">
+                        @if (item.Estado != "Finalizado" && item.Estado != "Cancelado")
+                        {
+                            <a href="@Url.Action("Edit", new { id = item.Id })" class="btn btn-outline btn-sm">Editar</a>
+                        }
+                        <form method="post" action="@Url.Action("Eliminar")" style="display:inline;" onsubmit="return confirm('¿Está seguro de eliminar este evento? Esta acción no se puede deshacer.');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@item.Id" />
+                            <button type="submit" class="btn btn-outline btn-sm" style="color:#dc2626;border-color:#dc2626;">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<style>
+    .event-row:hover td {
+        background: var(--primary-light) !important;
+    }
+    .event-row:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: -2px;
+    }
+    .status-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+    .status-btn {
+        cursor: pointer;
+        border: none;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+    .status-dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 100;
+        min-width: 150px;
+        overflow: hidden;
+    }
+    .status-option {
+        display: block;
+        width: 100%;
+        padding: 8px 16px;
+        text-align: left;
+        background: none;
+        border: none;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        color: var(--text);
+        font-family: inherit;
+    }
+    .status-option:hover {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+</style>
+
+@section scripts {
+    <script>
+        document.querySelectorAll('.event-row').forEach(function(row) {
+            row.addEventListener('click', function(e) {
+                if (e.target.closest('a, button, form')) return;
+                window.location.href = row.dataset.href;
+            });
+            
+            row.setAttribute('tabindex', '0');
+            row.setAttribute('role', 'button');
+            row.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    window.location.href = row.dataset.href;
+                }
+            });
+        });
+
+        document.querySelectorAll('.status-btn').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var menu = btn.nextElementSibling;
+                document.querySelectorAll('.status-dropdown-menu').forEach(function(m) {
+                    if (m !== menu) m.style.display = 'none';
+                });
+                menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+            });
+        });
+
+        document.addEventListener('click', function() {
+            document.querySelectorAll('.status-dropdown-menu').forEach(function(m) {
+                m.style.display = 'none';
+            });
+        });
+    </script>
+}

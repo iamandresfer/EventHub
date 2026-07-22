@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/EventHub.00.Info/" />
+  <Project Path="EventHub.01.Web/EventHub.01.Web.csproj" Id="ecf2bad1-06ad-42b9-b9e7-1c7fdd40d56d" />
+  <Project Path="EventHub.02.Bussines/EventHub.02.Bussines.csproj" Id="d6d3113e-a6be-494b-8272-2ab456aa7d0c" />
+  <Project Path="EventHub.03.Data/EventHub.03.Data.csproj" Id="a43454d8-4b54-4283-8fe4-bd5e12b655c0" />
+</Solution>
