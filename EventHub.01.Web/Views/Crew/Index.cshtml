@@ -1,0 +1,358 @@
+@model IEnumerable<EventHub._02.Bussines.DTOs.CrewOperadorDto>
+@{
+    ViewBag.Title = "Crew del Evento";
+}
+
+<div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-end;">
+    <div>
+        <h1>Personal Operativo (Crew)</h1>
+        <p>Evento: <strong>@ViewBag.EventoNombre</strong></p>
+    </div>
+    <div style="display:flex; gap: 8px;">
+        <a href="@Url.Action("Tareas", "Eventos", new { id = ViewBag.EventoId })" class="btn btn-outline">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+            Tablero de Tareas
+        </a>
+        <button type="button" class="btn btn-primary" onclick="openCrewModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo Operador
+        </button>
+    </div>
+</div>
+
+<div class="crew-grid" id="crewGrid">
+    @foreach (var c in Model)
+    {
+        <div class="crew-card @(c.Estado ? "" : "crew-inactive")" data-id="@c.Id">
+            <div class="crew-card-header">
+                <div class="crew-avatar">
+                    @(c.Nombre.Length > 0 ? c.Nombre.Substring(0, 1).ToUpper() : "?")
+                </div>
+                <div class="crew-info">
+                    <div class="crew-name">@c.Nombre</div>
+                    @if (!string.IsNullOrEmpty(c.Rol))
+                    {
+                        <div class="crew-role">@c.Rol</div>
+                    }
+                </div>
+                <div class="crew-actions">
+                    <button class="icon-btn" onclick="editarCrew(@c.Id)" title="Editar">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button class="icon-btn" onclick="toggleEstadoCrew(@c.Id)" title="@(c.Estado ? "Desactivar" : "Activar")">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">@(c.Estado ? "<path d='M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z'/><circle cx='12' cy='12' r='3'/>" : "<path d='M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24'/><line x1='1' y1='1' x2='23' y2='23'/>")</svg>
+                    </button>
+                    <button class="icon-btn icon-btn-danger" onclick="eliminarCrew(@c.Id)" title="Eliminar">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="crew-card-body">
+                @if (!string.IsNullOrEmpty(c.Email))
+                {
+                    <div class="crew-detail">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        @c.Email
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(c.Telefono))
+                {
+                    <div class="crew-detail">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        @c.Telefono
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(c.Cedula))
+                {
+                    <div class="crew-detail">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                        C.I. @c.Cedula
+                    </div>
+                }
+            </div>
+            <div class="crew-card-footer">
+                <span class="crew-status @(c.Estado ? "status-active" : "status-inactive")">
+                    @(c.Estado ? "Activo" : "Inactivo")
+                </span>
+                <span class="crew-date">Desde @c.FechaCreacion.ToString("dd/MM/yyyy")</span>
+            </div>
+        </div>
+    }
+</div>
+
+@if (!Model.Any())
+{
+    <div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--text-muted); margin-bottom: 16px;">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <h3 style="color: var(--text-muted); font-weight: 600;">Sin operadores</h3>
+        <p style="color: var(--text-muted); font-size: 14px;">Agrega operadores a este evento para poder asignarles tareas.</p>
+    </div>
+}
+
+<!-- Modal Crew -->
+<div id="crewModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.5); z-index:2000; align-items:center; justify-content:center;">
+    <div style="width:440px; max-width:95vw; background:var(--bg-card); border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,0.3); overflow:hidden;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:20px 24px; border-bottom:1px solid var(--border);">
+            <h3 style="margin:0; font-size:18px; font-weight:700;" id="crewModalTitle">Nuevo Operador</h3>
+            <button type="button" onclick="closeCrewModal()" style="background:none; border:none; color:var(--text-muted); cursor:pointer;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <form id="crewForm" style="padding:24px;">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="Id" id="crewFormId" value="0" />
+            <input type="hidden" name="EventoId" value="@ViewBag.EventoId" />
+
+            <div class="form-group">
+                <label>Nombre *</label>
+                <input type="text" name="Nombre" id="crewFormNombre" class="form-control" required maxlength="150" placeholder="Ej: Juan Pérez" />
+            </div>
+            <div class="form-group">
+                <label>Cédula</label>
+                <input type="text" name="Cedula" id="crewFormCedula" class="form-control" maxlength="20" placeholder="Ej: 12345678" />
+            </div>
+            <div class="form-group">
+                <label>Email *</label>
+                <input type="email" name="Email" id="crewFormEmail" class="form-control" required maxlength="200" placeholder="juan@ejemplo.com" />
+            </div>
+            <div class="form-group">
+                <label>Teléfono</label>
+                <input type="text" name="Telefono" id="crewFormTelefono" class="form-control" maxlength="20" placeholder="Ej: 0412-1234567" />
+            </div>
+            <div class="form-group">
+                <label>Rol / Especialidad</label>
+                <input type="text" name="Rol" id="crewFormRol" class="form-control" maxlength="100" placeholder="Ej: DJ, Sonidista, Iluminación" />
+            </div>
+        </form>
+        <div style="display:flex; gap:8px; justify-content:flex-end; padding:16px 24px; border-top:1px solid var(--border);">
+            <button type="button" class="btn btn-outline" onclick="closeCrewModal()">Cancelar</button>
+            <button type="button" class="btn btn-primary" onclick="guardarCrew()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .crew-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 16px;
+        margin-top: 20px;
+    }
+    .crew-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .crew-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        border-color: var(--primary);
+    }
+    .crew-card.crew-inactive {
+        opacity: 0.6;
+    }
+    .crew-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+    }
+    .crew-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+    .crew-info {
+        flex: 1;
+        min-width: 0;
+    }
+    .crew-name {
+        font-weight: 600;
+        font-size: 15px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .crew-role {
+        font-size: 12px;
+        color: var(--primary);
+        font-weight: 500;
+    }
+    .crew-actions {
+        display: flex;
+        gap: 4px;
+    }
+    .icon-btn {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .icon-btn:hover {
+        background: var(--bg-secondary);
+        color: var(--text);
+    }
+    .icon-btn-danger:hover {
+        background: #fee2e2;
+        color: #ef4444;
+    }
+    .crew-card-body {
+        padding: 0 16px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .crew-detail {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+    .crew-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 16px;
+        border-top: 1px solid var(--border);
+        background: var(--bg-secondary);
+    }
+    .crew-status {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .status-active { color: #10b981; }
+    .status-inactive { color: #ef4444; }
+    .crew-date {
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+    .form-group {
+        margin-bottom: 16px;
+    }
+    .form-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: var(--text);
+    }
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 14px;
+        background: var(--bg-card);
+        color: var(--text);
+        box-sizing: border-box;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+</style>
+
+@section scripts {
+    <script>
+        let crewDict = {};
+        @foreach (var c in Model)
+        {
+            <text>
+            crewDict[@c.Id] = {
+                Id: @c.Id,
+                Nombre: `@Html.Raw(c.Nombre.Replace("`", "\\`"))`,
+                Cedula: `@Html.Raw(c.Cedula?.Replace("`", "\\`") ?? "")`,
+                Email: `@Html.Raw(c.Email.Replace("`", "\\`"))`,
+                Telefono: `@Html.Raw(c.Telefono?.Replace("`", "\\`") ?? "")`,
+                Rol: `@Html.Raw(c.Rol?.Replace("`", "\\`") ?? "")`
+            };
+            </text>
+        }
+
+        function openCrewModal() {
+            document.getElementById('crewModalTitle').innerText = 'Nuevo Operador';
+            document.getElementById('crewForm').reset();
+            document.getElementById('crewFormId').value = "0";
+            document.getElementById('crewModal').style.display = 'flex';
+        }
+
+        function editarCrew(id) {
+            const crew = crewDict[id];
+            if(!crew) return;
+            document.getElementById('crewModalTitle').innerText = 'Editar Operador';
+            document.getElementById('crewFormId').value = crew.Id;
+            document.getElementById('crewFormNombre').value = crew.Nombre;
+            document.getElementById('crewFormCedula').value = crew.Cedula;
+            document.getElementById('crewFormEmail').value = crew.Email;
+            document.getElementById('crewFormTelefono').value = crew.Telefono;
+            document.getElementById('crewFormRol').value = crew.Rol;
+            document.getElementById('crewModal').style.display = 'flex';
+        }
+
+        function closeCrewModal() {
+            document.getElementById('crewModal').style.display = 'none';
+        }
+
+        function guardarCrew() {
+            const form = document.getElementById('crewForm');
+            if(!form.checkValidity()) { form.reportValidity(); return; }
+
+            const isEdit = document.getElementById('crewFormId').value != "0";
+            const url = isEdit ? '@Url.Action("ActualizarCrewAjax", "Crew")' : '@Url.Action("CrearCrewAjax", "Crew")';
+
+            const fd = new FormData(form);
+            fetch(url, { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) { location.reload(); }
+                else { alert('Error: ' + data.message); }
+            });
+        }
+
+        function toggleEstadoCrew(id) {
+            const fd = new FormData();
+            fd.append('id', id);
+            fd.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+            fetch('@Url.Action("ToggleEstadoAjax", "Crew")', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => { if(data.success) location.reload(); else alert('Error: ' + data.message); });
+        }
+
+        function eliminarCrew(id) {
+            if(!confirm("¿Eliminar este operador?")) return;
+            const fd = new FormData();
+            fd.append('id', id);
+            fd.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+            fetch('@Url.Action("EliminarCrewAjax", "Crew")', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => { if(data.success) location.reload(); else alert('Error: ' + data.message); });
+        }
+    </script>
+}

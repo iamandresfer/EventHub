@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace EventHub._02.Bussines.DTOs
@@ -13,7 +14,12 @@ namespace EventHub._02.Bussines.DTOs
         public DateTime? FechaLimite { get; set; }
         public int? AsignadoAId { get; set; }
         public string AsignadoANombre { get; set; }
+        public int? CrewOperadorId { get; set; }
+        public string CrewOperadorNombre { get; set; }
+        public string CrewOperadorEmail { get; set; }
+        public int? CreadoPorId { get; set; }
         public int Orden { get; set; }
+        public List<TareaAdjuntoDto> Adjuntos { get; set; } = new List<TareaAdjuntoDto>();
     }
 
     public class TareaFormDto
@@ -35,6 +41,8 @@ namespace EventHub._02.Bussines.DTOs
         public DateTime? FechaLimite { get; set; }
         
         public int? AsignadoAId { get; set; }
+
+        public int? CrewOperadorId { get; set; }
         
         public int Orden { get; set; }
     }

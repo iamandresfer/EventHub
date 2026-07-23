@@ -79,6 +79,11 @@ namespace EventHub._02.Bussines.Services
             await SendEmailAsync(toEmail, subject, body);
         }
 
+        public async Task SendGenericEmailAsync(string toEmail, string subject, string htmlBody)
+        {
+            await SendEmailAsync(toEmail, subject, htmlBody);
+        }
+
         private async Task SendEmailAsync(string toEmail, string subject, string body)
         {
             try

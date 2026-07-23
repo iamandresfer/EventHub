@@ -7,5 +7,6 @@ namespace EventHub._02.Bussines.Services
         Task SendOtpEmailAsync(string toEmail, string userName, string otpCode);
         Task SendPasswordResetOtpEmailAsync(string toEmail, string userName, string otpCode);
         Task SendWelcomeEmailAsync(string toEmail, string userName);
+        Task SendGenericEmailAsync(string toEmail, string subject, string htmlBody);
     }
 }

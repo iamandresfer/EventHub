@@ -17,6 +17,8 @@ namespace EventHub._01.Web.Controllers
         private readonly IClienteService _clienteService;
         private readonly IVenueService _venueService;
         private readonly ITipoEventoService _tipoEventoService;
+        private readonly INotificacionService _notificacionService;
+        private readonly IEmailService _emailService;
 
         public EventosController()
         {
@@ -25,6 +27,8 @@ namespace EventHub._01.Web.Controllers
             _clienteService = new ClienteService(context);
             _venueService = new VenueService(context);
             _tipoEventoService = new TipoEventoService(context);
+            _notificacionService = new NotificacionService();
+            _emailService = new EmailService();
         }
 
         public async Task<ActionResult> Index(string search, string estado)
@@ -245,6 +249,11 @@ namespace EventHub._01.Web.Controllers
             var usuarios = context.Usuarios.Where(u => u.Estado).Select(u => new { u.Id, u.Nombre }).ToList();
             ViewBag.Usuarios = new SelectList(usuarios, "Id", "Nombre");
 
+            // Cargar crew del evento
+            var crewService = new CrewService();
+            var crew = crewService.ObtenerCrewPorEvento(id);
+            ViewBag.Crew = new SelectList(crew.Where(c => c.Estado), "Id", "Nombre");
+
             var tareaService = new TareaService();
             var tareas = tareaService.ObtenerTareasPorEvento(id);
 
@@ -261,6 +270,31 @@ namespace EventHub._01.Web.Controllers
             {
                 var tareaService = new TareaService();
                 var result = tareaService.CrearTarea(model);
+
+                // Enviar notificación si hay un crew operador asignado
+                if (result.CrewOperadorId.HasValue && !string.IsNullOrEmpty(result.CrewOperadorEmail))
+                {
+                    var context = new EventHubContext();
+                    var evento = context.Eventos.Find(model.EventoId);
+                    var eventoNombre = evento?.Nombre ?? "Evento";
+
+                    var mensaje = $"Se te asignó la tarea \"{result.Titulo}\" en el evento \"{eventoNombre}\".";
+                    if (result.FechaLimite.HasValue)
+                        mensaje += $" Fecha límite: {result.FechaLimite.Value.ToString("dd/MM/yyyy")}.";
+
+                    _notificacionService.CrearYEnviar(
+                        "TareaCreada",
+                        mensaje,
+                        result.CrewOperadorEmail,
+                        result.CrewOperadorNombre,
+                        model.EventoId,
+                        result.Id,
+                        _emailService,
+                        eventoNombre,
+                        result.Titulo
+                    );
+                }
+
                 return Json(new { success = true, tarea = result });
             }
             catch (Exception ex)
@@ -281,16 +315,37 @@ namespace EventHub._01.Web.Controllers
                 var tarea = context.Tareas.Find(model.Id);
                 if (tarea == null) return Json(new { success = false, message = "Tarea no encontrada" });
 
+                var fechaAnterior = tarea.FechaLimite;
                 tarea.Titulo = model.Titulo;
                 tarea.Descripcion = model.Descripcion;
                 tarea.FechaLimite = model.FechaLimite;
                 tarea.AsignadoAId = model.AsignadoAId;
+                tarea.CrewOperadorId = model.CrewOperadorId;
                 
                 context.SaveChanges();
 
                 var tareaService = new TareaService();
-                // Get updated Dto to return to UI
-                var updated = tareaService.ObtenerTareasPorEvento(model.EventoId).FirstOrDefault(t => t.Id == model.Id);
+                var updated = tareaService.ObtenerPorId(model.Id);
+
+                // Notificar si cambió la fecha límite
+                if (fechaAnterior != model.FechaLimite && updated.CrewOperadorId.HasValue && !string.IsNullOrEmpty(updated.CrewOperadorEmail))
+                {
+                    var evento = context.Eventos.Find(model.EventoId);
+                    var eventoNombre = evento?.Nombre ?? "Evento";
+                    var fechaStr = model.FechaLimite.HasValue ? model.FechaLimite.Value.ToString("dd/MM/yyyy") : "sin fecha límite";
+
+                    _notificacionService.CrearYEnviar(
+                        "FechaModificada",
+                        $"Se modificó la fecha límite de la tarea \"{updated.Titulo}\" en el evento \"{eventoNombre}\". Nueva fecha: {fechaStr}.",
+                        updated.CrewOperadorEmail,
+                        updated.CrewOperadorNombre,
+                        model.EventoId,
+                        model.Id,
+                        _emailService,
+                        eventoNombre,
+                        updated.Titulo
+                    );
+                }
 
                 return Json(new { success = true, tarea = updated });
             }
@@ -307,6 +362,35 @@ namespace EventHub._01.Web.Controllers
             {
                 var tareaService = new TareaService();
                 var result = tareaService.ActualizarEstado(tareaId, nuevoEstado, nuevoOrden);
+
+                // Notificar al productor si la tarea fue completada
+                if (nuevoEstado == "Completado")
+                {
+                    var tarea = tareaService.ObtenerPorId(tareaId);
+                    if (tarea != null)
+                    {
+                        var context = new EventHubContext();
+                        var evento = context.Eventos.Find(tarea.EventoId);
+                        var eventoNombre = evento?.Nombre ?? "Evento";
+                        var productor = context.Usuarios.Find(evento?.ProductorGeneralId ?? 0);
+
+                        if (productor != null)
+                        {
+                            _notificacionService.CrearYEnviar(
+                                "TareaCompletada",
+                                $"La tarea \"{tarea.Titulo}\" del evento \"{eventoNombre}\" ha sido completada.",
+                                productor.Email,
+                                productor.Nombre,
+                                tarea.EventoId,
+                                tareaId,
+                                _emailService,
+                                eventoNombre,
+                                tarea.Titulo
+                            );
+                        }
+                    }
+                }
+
                 return Json(new { success = result });
             }
             catch (Exception ex)

@@ -31,6 +31,10 @@ namespace EventHub._02.Bussines.Services
                     FechaLimite = t.FechaLimite,
                     AsignadoAId = t.AsignadoAId,
                     AsignadoANombre = t.AsignadoA != null ? t.AsignadoA.Nombre : null,
+                    CrewOperadorId = t.CrewOperadorId,
+                    CrewOperadorNombre = t.CrewOperador != null ? t.CrewOperador.Nombre : null,
+                    CrewOperadorEmail = t.CrewOperador != null ? t.CrewOperador.Email : null,
+                    CreadoPorId = t.CreadoPorId,
                     Orden = t.Orden
                 })
                 .ToList();
@@ -51,6 +55,7 @@ namespace EventHub._02.Bussines.Services
                 Estado = dto.Estado,
                 FechaLimite = dto.FechaLimite,
                 AsignadoAId = dto.AsignadoAId,
+                CrewOperadorId = dto.CrewOperadorId,
                 Orden = maxOrden + 1
             };
 
@@ -66,6 +71,9 @@ namespace EventHub._02.Bussines.Services
                 Estado = nuevaTarea.Estado,
                 FechaLimite = nuevaTarea.FechaLimite,
                 AsignadoAId = nuevaTarea.AsignadoAId,
+                CrewOperadorId = nuevaTarea.CrewOperadorId,
+                CrewOperadorNombre = nuevaTarea.CrewOperador?.Nombre,
+                CrewOperadorEmail = nuevaTarea.CrewOperador?.Email,
                 Orden = nuevaTarea.Orden
             };
         }
@@ -100,6 +108,39 @@ namespace EventHub._02.Bussines.Services
             if (tarea == null) return false;
 
             _context.Tareas.Remove(tarea);
+            _context.SaveChanges();
+            return true;
+        }
+
+        public TareaDto ObtenerPorId(int id)
+        {
+            var t = _context.Tareas.Find(id);
+            if (t == null) return null;
+
+            return new TareaDto
+            {
+                Id = t.Id,
+                EventoId = t.EventoId,
+                Titulo = t.Titulo,
+                Descripcion = t.Descripcion,
+                Estado = t.Estado,
+                FechaLimite = t.FechaLimite,
+                AsignadoAId = t.AsignadoAId,
+                AsignadoANombre = t.AsignadoA?.Nombre,
+                CrewOperadorId = t.CrewOperadorId,
+                CrewOperadorNombre = t.CrewOperador?.Nombre,
+                CrewOperadorEmail = t.CrewOperador?.Email,
+                CreadoPorId = t.CreadoPorId,
+                Orden = t.Orden
+            };
+        }
+
+        public bool ActualizarFechaLimite(int tareaId, DateTime? nuevaFecha)
+        {
+            var tarea = _context.Tareas.Find(tareaId);
+            if (tarea == null) return false;
+
+            tarea.FechaLimite = nuevaFecha;
             _context.SaveChanges();
             return true;
         }
