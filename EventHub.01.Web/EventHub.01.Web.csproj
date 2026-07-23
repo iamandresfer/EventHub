@@ -158,6 +158,7 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\AuthController.cs" />
     <Compile Include="Controllers\EventosController.cs" />
+    <Compile Include="Controllers\CrewController.cs" />
     <Compile Include="Controllers\ClientesController.cs" />
     <Compile Include="Models\LoginViewModel.cs" />
     <Compile Include="Models\RegisterViewModel.cs" />
@@ -234,6 +235,8 @@
     <Content Include="Views\Eventos\Details.cshtml" />
     <Content Include="Views\Eventos\Create.cshtml" />
     <Content Include="Views\Eventos\Edit.cshtml" />
+    <Content Include="Views\Eventos\Tareas.cshtml" />
+    <Content Include="Views\Crew\Index.cshtml" />
     <Content Include="Views\Clientes\Index.cshtml" />
     <Content Include="Views\Clientes\Create.cshtml" />
     <Content Include="Views\Clientes\Edit.cshtml" />

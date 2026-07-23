@@ -59,6 +59,9 @@
     <Compile Include="Entities\Venue.cs" />
     <Compile Include="Entities\Evento.cs" />
     <Compile Include="Entities\Tarea.cs" />
+    <Compile Include="Entities\CrewOperador.cs" />
+    <Compile Include="Entities\Notificacion.cs" />
+    <Compile Include="Entities\TareaAdjunto.cs" />
     <Compile Include="EventHubContext.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

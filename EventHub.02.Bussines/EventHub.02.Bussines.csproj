@@ -100,8 +100,15 @@
     <Compile Include="Services\ITipoEventoService.cs" />
     <Compile Include="Services\TipoEventoService.cs" />
     <Compile Include="DTOs\TareaDto.cs" />
+    <Compile Include="DTOs\CrewOperadorDto.cs" />
+    <Compile Include="DTOs\NotificacionDto.cs" />
+    <Compile Include="DTOs\TareaAdjuntoDto.cs" />
     <Compile Include="Services\ITareaService.cs" />
     <Compile Include="Services\TareaService.cs" />
+    <Compile Include="Services\ICrewService.cs" />
+    <Compile Include="Services\CrewService.cs" />
+    <Compile Include="Services\INotificacionService.cs" />
+    <Compile Include="Services\NotificacionService.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
