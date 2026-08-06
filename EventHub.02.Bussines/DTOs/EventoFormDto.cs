@@ -46,11 +46,10 @@ namespace EventHub._02.Bussines.DTOs
         [DataType(DataType.Time)]
         public TimeSpan HoraFin { get; set; }
 
-        [Required(ErrorMessage = "El presupuesto estimado es obligatorio.")]
         [Range(0.01, double.MaxValue, ErrorMessage = "El presupuesto debe ser mayor a 0.")]
-        [Display(Name = "Presupuesto Estimado")]
+        [Display(Name = "Presupuesto Estimado (opcional)")]
         [DataType(DataType.Currency)]
-        public decimal PresupuestoEstimado { get; set; }
+        public decimal? PresupuestoEstimado { get; set; }
 
         [StringLength(1000, ErrorMessage = "La descripción no puede exceder 1000 caracteres.")]
         [Display(Name = "Descripción")]

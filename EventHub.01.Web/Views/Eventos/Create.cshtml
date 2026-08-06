@@ -1,12 +1,10 @@
 @model EventHub._02.Bussines.DTOs.EventoFormDto
 @{
     ViewBag.Title = "Nuevo Evento";
+    ViewBag.HeaderTitle = "Nuevo Evento";
+    ViewBag.HeaderSubtitle = "Ingrese los datos del evento";
+    ViewBag.BackUrl = Url.Action("Index");
 }
-
-<div class="page-header">
-    <h1>Nuevo Evento</h1>
-    <p>Ingrese los datos del evento</p>
-</div>
 
 @using (Html.BeginForm("Create", "Eventos", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
@@ -168,7 +166,7 @@
 
         <div class="form-group">
             @Html.LabelFor(m => m.PresupuestoEstimado)
-            @Html.TextBoxFor(m => m.PresupuestoEstimado, "{0:F2}", new { @class = "form-control", type = "number", step = "0.01", min = "0.01" })
+            @Html.TextBoxFor(m => m.PresupuestoEstimado, "{0:F2}", new { @class = "form-control", type = "number", step = "0.01", min = "0", placeholder = "Opcional" })
             @Html.ValidationMessageFor(m => m.PresupuestoEstimado, "", new { @class = "field-error" })
         </div>
 
@@ -866,7 +864,7 @@
         function handleCoverFile(file) {
             if (!file.type.startsWith('image/')) return;
             if (file.size > 5 * 1024 * 1024) {
-                alert('El archivo debe ser menor a 5MB');
+                window.EventHubSwal.error('El archivo debe ser menor a 5MB');
                 return;
             }
             var reader = new FileReader();
@@ -891,11 +889,11 @@
                 if (data.success) {
                     document.getElementById('CoverPhotoUrl').value = data.url;
                 } else {
-                    alert(data.message || 'Error al subir la imagen');
+                    window.EventHubSwal.error(data.message || 'Error al subir la imagen');
                 }
             })
             .catch(function() {
-                alert('Error de conexión al subir imagen');
+                window.EventHubSwal.error('Error de conexión al subir imagen');
             });
         }
 
@@ -923,11 +921,11 @@
                 if (data.success) {
                     onSuccess(data);
                 } else {
-                    alert(data.message || 'Error al guardar');
+                    window.EventHubSwal.error(data.message || 'Error al guardar');
                 }
             })
             .catch(function() {
-                alert('Error de conexión');
+                window.EventHubSwal.error('Error de conexión');
             });
         }
 

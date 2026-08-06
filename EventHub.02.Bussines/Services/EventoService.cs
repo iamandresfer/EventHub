@@ -37,7 +37,15 @@ namespace EventHub._02.Bussines.Services
                     FechaFin = e.FechaFin,
                     Estado = e.Estado,
                     PresupuestoEstimado = e.PresupuestoEstimado,
-                    CoverPhotoUrl = e.CoverPhotoUrl
+                    GastoReal = e.GastoReal,
+                    TotalIngresos = e.TotalIngresos,
+                    CoverPhotoUrl = e.CoverPhotoUrl,
+                    ClienteId = e.ClienteId,
+                    VenueId = e.VenueId,
+                    TipoEventoId = e.TipoEventoId,
+                    HoraInicio = e.HoraInicio,
+                    HoraFin = e.HoraFin,
+                    Descripcion = e.Descripcion
                 })
                 .ToListAsync();
         }
@@ -61,7 +69,15 @@ namespace EventHub._02.Bussines.Services
                     FechaFin = e.FechaFin,
                     Estado = e.Estado,
                     PresupuestoEstimado = e.PresupuestoEstimado,
-                    CoverPhotoUrl = e.CoverPhotoUrl
+                    GastoReal = e.GastoReal,
+                    TotalIngresos = e.TotalIngresos,
+                    CoverPhotoUrl = e.CoverPhotoUrl,
+                    ClienteId = e.ClienteId,
+                    VenueId = e.VenueId,
+                    TipoEventoId = e.TipoEventoId,
+                    HoraInicio = e.HoraInicio,
+                    HoraFin = e.HoraFin,
+                    Descripcion = e.Descripcion
                 })
                 .FirstOrDefaultAsync();
         }
@@ -111,6 +127,8 @@ namespace EventHub._02.Bussines.Services
             entity.HoraFin = dto.HoraFin;
             entity.PresupuestoEstimado = dto.PresupuestoEstimado;
             entity.Descripcion = dto.Descripcion;
+            if (!string.IsNullOrEmpty(dto.CoverPhotoUrl))
+                entity.CoverPhotoUrl = dto.CoverPhotoUrl;
 
             await _context.SaveChangesAsync();
             return await GetByIdAsync(id);
@@ -142,6 +160,7 @@ namespace EventHub._02.Bussines.Services
         public async Task<DashboardDto> GetDashboardAsync()
         {
             var now = DateTime.Now;
+            var inicioActividad = now.AddMonths(-12);
 
             return new DashboardDto
             {
@@ -166,16 +185,45 @@ namespace EventHub._02.Bussines.Services
                         ClienteNombre = e.Cliente.Nombre,
                         VenueNombre = e.Venue.Nombre,
                         FechaInicio = e.FechaInicio,
-                        Estado = e.Estado
+                        Estado = e.Estado,
+                        PresupuestoEstimado = e.PresupuestoEstimado,
+                        CoverPhotoUrl = e.CoverPhotoUrl
                     })
+                    .ToListAsync(),
+                EventosFinalizadosRecientes = await _context.Eventos
+                    .Include(e => e.Cliente)
+                    .Include(e => e.Venue)
+                    .Where(e => e.Estado == "Finalizado" || e.Estado == "Cancelado")
+                    .OrderByDescending(e => e.FechaCierre)
+                    .Take(5)
+                    .Select(e => new EventoListDto
+                    {
+                        Id = e.Id,
+                        Nombre = e.Nombre,
+                        ClienteNombre = e.Cliente.Nombre,
+                        FechaInicio = e.FechaInicio,
+                        Estado = e.Estado,
+                        PresupuestoEstimado = e.PresupuestoEstimado
+                    })
+                    .ToListAsync(),
+                EventosActividad = await _context.Eventos
+                    .Where(e => e.FechaInicio >= inicioActividad && e.FechaInicio <= now)
+                    .Select(e => e.FechaInicio)
                     .ToListAsync()
             };
         }
 
         private async Task<string> GenerarCodigoAsync()
         {
-            var count = await _context.Eventos.CountAsync();
-            return $"EVT-{(count + 1):D5}";
+            var codes = await _context.Eventos.Select(e => e.Codigo).ToListAsync();
+            var maxNum = 0;
+            foreach (var code in codes)
+            {
+                var match = System.Text.RegularExpressions.Regex.Match(code ?? "", @"(\d+)\s*$");
+                if (match.Success && int.TryParse(match.Value, out var n) && n > maxNum)
+                    maxNum = n;
+            }
+            return $"EVT-{maxNum + 1:D5}";
         }
     }
 }

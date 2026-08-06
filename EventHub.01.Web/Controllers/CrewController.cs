@@ -10,11 +10,11 @@ namespace EventHub._01.Web.Controllers
     [Authorize]
     public class CrewController : Controller
     {
-        private readonly ICrewService _crewService;
+        private readonly IOperadorService _operadorService;
 
         public CrewController()
         {
-            _crewService = new CrewService();
+            _operadorService = new OperadorService();
         }
 
         public ActionResult Index(int eventoId)
@@ -26,20 +26,27 @@ namespace EventHub._01.Web.Controllers
             ViewBag.EventoId = eventoId;
             ViewBag.EventoNombre = evento.Nombre;
 
-            var crew = _crewService.ObtenerCrewPorEvento(eventoId);
-            return View(crew);
+            var operadores = _operadorService.GetPorEvento(eventoId);
+            return View(operadores);
+        }
+
+        [HttpGet]
+        public ActionResult Index()
+        {
+            var operadores = _operadorService.GetActivos();
+            return View("IndexGlobal", operadores);
         }
 
         [HttpPost]
-        public ActionResult CrearCrewAjax(CrewOperadorFormDto model)
+        public ActionResult CrearOperadorAjax(OperadorFormDto model)
         {
             if (!ModelState.IsValid)
                 return Json(new { success = false, message = "Datos inválidos" });
 
             try
             {
-                var result = _crewService.CrearCrew(model);
-                return Json(new { success = true, crew = result });
+                var result = _operadorService.Create(model);
+                return Json(new { success = true, operador = result });
             }
             catch (Exception ex)
             {
@@ -48,18 +55,18 @@ namespace EventHub._01.Web.Controllers
         }
 
         [HttpPost]
-        public ActionResult ActualizarCrewAjax(CrewOperadorFormDto model)
+        public ActionResult AsignarAEventoAjax(int operadorId, int eventoId)
         {
-            if (!ModelState.IsValid)
-                return Json(new { success = false, message = "Datos inválidos" });
-
             try
             {
-                var result = _crewService.ActualizarCrew(model);
-                if (result == null)
+                var context = new EventHubContext();
+                var operador = context.Operadores.Find(operadorId);
+                if (operador == null)
                     return Json(new { success = false, message = "Operador no encontrado" });
 
-                return Json(new { success = true, crew = result });
+                operador.EventoId = eventoId;
+                context.SaveChanges();
+                return Json(new { success = true });
             }
             catch (Exception ex)
             {
@@ -68,25 +75,11 @@ namespace EventHub._01.Web.Controllers
         }
 
         [HttpPost]
-        public ActionResult EliminarCrewAjax(int id)
+        public ActionResult RemoverDeEventoAjax(int operadorId)
         {
             try
             {
-                var result = _crewService.EliminarCrew(id);
-                return Json(new { success = result });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = ex.Message });
-            }
-        }
-
-        [HttpPost]
-        public ActionResult ToggleEstadoAjax(int id)
-        {
-            try
-            {
-                var result = _crewService.ToggleEstado(id);
+                var result = _operadorService.RemoverDeEvento(operadorId);
                 return Json(new { success = result });
             }
             catch (Exception ex)
@@ -100,8 +93,22 @@ namespace EventHub._01.Web.Controllers
         {
             try
             {
-                var crew = _crewService.ObtenerCrewPorEvento(eventoId);
-                return Json(new { success = true, crew = crew }, JsonRequestBehavior.AllowGet);
+                var operadores = _operadorService.GetPorEvento(eventoId);
+                return Json(new { success = true, crew = operadores }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpGet]
+        public ActionResult ObtenerOperadoresAjax()
+        {
+            try
+            {
+                var operadores = _operadorService.GetActivos();
+                return Json(new { success = true, operadores = operadores }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {

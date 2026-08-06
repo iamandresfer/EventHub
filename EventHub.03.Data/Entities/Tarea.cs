@@ -36,7 +36,7 @@ namespace EventHub._03.Data.Entities
         public int? AsignadoAId { get; set; }
 
         [Column("tar_crew_operador_id")]
-        public int? CrewOperadorId { get; set; }
+        public int? OperadorId { get; set; }
 
         [Column("tar_creado_por_id")]
         public int? CreadoPorId { get; set; }
@@ -45,14 +45,18 @@ namespace EventHub._03.Data.Entities
         [Column("tar_orden")]
         public int Orden { get; set; }
 
+        [MaxLength(50)]
+        [Column("tar_categoria")]
+        public string Categoria { get; set; }
+
         [ForeignKey("EventoId")]
         public virtual Evento Evento { get; set; }
 
         [ForeignKey("AsignadoAId")]
         public virtual Usuario AsignadoA { get; set; }
 
-        [ForeignKey("CrewOperadorId")]
-        public virtual CrewOperador CrewOperador { get; set; }
+        [ForeignKey("OperadorId")]
+        public virtual Operador Operador { get; set; }
 
         public virtual ICollection<TareaAdjunto> Adjuntos { get; set; }
     }

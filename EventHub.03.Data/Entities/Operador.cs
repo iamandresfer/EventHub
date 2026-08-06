@@ -4,54 +4,56 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EventHub._03.Data.Entities
 {
-    [Table("tbl_crew_operadores")]
-    public class CrewOperador
+    [Table("tbl_operadores")]
+    public class Operador
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Column("cro_id")]
+        [Column("ope_id")]
         public int Id { get; set; }
 
         [Required]
-        [Column("cro_eve_id")]
-        public int EventoId { get; set; }
-
-        [Required]
         [MaxLength(150)]
-        [Column("cro_nombre")]
+        [Column("ope_nombre")]
         public string Nombre { get; set; }
 
         [MaxLength(20)]
-        [Column("cro_cedula")]
+        [Column("ope_cedula")]
         public string Cedula { get; set; }
 
         [Required]
         [MaxLength(200)]
-        [Column("cro_email")]
+        [Column("ope_email")]
         public string Email { get; set; }
 
         [MaxLength(20)]
-        [Column("cro_telefono")]
+        [Column("ope_telefono")]
         public string Telefono { get; set; }
 
         [MaxLength(100)]
-        [Column("cro_rol")]
-        public string Rol { get; set; } // Ej: "DJ", "Sonidista", "Iluminación"
+        [Column("ope_rol")]
+        public string Rol { get; set; }
 
-        [Required]
-        [Column("cro_estado")]
+        [Column("ope_estado")]
         public bool Estado { get; set; } = true;
 
-        [Column("cro_fecha_creacion")]
+        [Column("ope_fecha_creacion")]
         public DateTime FechaCreacion { get; set; } = DateTime.Now;
 
+        [MaxLength(500)]
+        [Column("ope_foto_url")]
+        public string FotoUrl { get; set; }
+
+        [Column("ope_eve_id")]
+        public int? EventoId { get; set; }
+
         [MaxLength(50)]
-        [Column("cro_num_cuenta")]
-        public string NumeroCuenta { get; set; } // Proyección futura: pagos
+        [Column("ope_num_cuenta")]
+        public string NumeroCuenta { get; set; }
 
         [MaxLength(100)]
-        [Column("cro_banco")]
-        public string Banco { get; set; } // Proyección futura: pagos
+        [Column("ope_banco")]
+        public string Banco { get; set; }
 
         [ForeignKey("EventoId")]
         public virtual Evento Evento { get; set; }

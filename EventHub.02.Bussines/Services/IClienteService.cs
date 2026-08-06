@@ -13,5 +13,6 @@ namespace EventHub._02.Bussines.Services
         Task<ClienteDto> UpdateAsync(ClienteDto dto);
         Task<bool> ToggleEstadoAsync(int id);
         Task<bool> DeactivateAsync(int id);
+        Task<(List<ClienteDto> Items, int Total)> GetPagedAsync(int page, int pageSize, string search = null);
     }
 }

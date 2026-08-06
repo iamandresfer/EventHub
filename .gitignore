@@ -45,3 +45,6 @@ graphify-out/
 
 # SQL backups
 *.sql.bak
+
+# Runtime uploads
+EventHub.01.Web/Content/uploads/

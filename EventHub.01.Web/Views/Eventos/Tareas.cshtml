@@ -1,28 +1,19 @@
 @model IEnumerable<EventHub._02.Bussines.DTOs.TareaDto>
 @{
     ViewBag.Title = "Tablero de Tareas";
+    ViewBag.HeaderTitle = "Tablero de Tareas";
+    ViewBag.HeaderSubtitle = "Evento: " + ViewBag.EventoNombre;
+    ViewBag.BackUrl = Url.Action("Details", new { id = ViewBag.EventoId });
 }
 
-<div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-end;">
-    <div>
-        <h1>Tablero de Tareas</h1>
-        <p>Evento: <strong>@ViewBag.EventoNombre</strong></p>
-    </div>
-    <div style="display:flex; gap: 8px;">
-        <a href="@Url.Action("Index", "Crew", new { eventoId = ViewBag.EventoId })" class="btn btn-outline">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-            Crew
-        </a>
-        <a href="@Url.Action("Details", new { id = ViewBag.EventoId })" class="btn btn-outline">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-            Volver al Evento
-        </a>
-        <button type="button" class="btn btn-primary" onclick="openNuevaTareaModal()">
+@section headerActions {
+    <div class="section-header__actions">
+        <button type="button" class="btn btn-primary btn-sm" onclick="openNuevaTareaModal()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Nueva Tarea
         </button>
     </div>
-</div>
+}
 
 <div class="kanban-board">
     <!-- Columna PENDIENTE -->
@@ -35,6 +26,10 @@
             {
                 <div class="kanban-card" draggable="true" data-id="@t.Id" data-orden="@t.Orden" onclick="editarTarea(@t.Id)">
                     <div class="card-title">@t.Titulo</div>
+                    @if (!string.IsNullOrEmpty(t.Categoria))
+                    {
+                        <span class="badge-categoria" data-cat="@t.Categoria">@t.Categoria</span>
+                    }
                     @if (!string.IsNullOrEmpty(t.Descripcion))
                     {
                         <div class="card-desc">@t.Descripcion</div>
@@ -45,13 +40,9 @@
                             {
                                 <span class="badge-deadline"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> @t.FechaLimite.Value.ToString("dd/MM/yyyy")</span>
                             }
-                            @if (!string.IsNullOrEmpty(t.CrewOperadorNombre))
+                            @if (!string.IsNullOrEmpty(t.OperadorNombre))
                             {
-                                <span class="badge-user"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> @t.CrewOperadorNombre</span>
-                            }
-                            else if (!string.IsNullOrEmpty(t.AsignadoANombre))
-                            {
-                                <span class="badge-user"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> @t.AsignadoANombre</span>
+                                <span class="badge-user"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> @t.OperadorNombre</span>
                             }
                         </div>
                         <button class="delete-btn" onclick="eliminarTarea(@t.Id, event)">
@@ -73,6 +64,10 @@
             {
                 <div class="kanban-card" draggable="true" data-id="@t.Id" data-orden="@t.Orden" onclick="editarTarea(@t.Id)">
                     <div class="card-title">@t.Titulo</div>
+                    @if (!string.IsNullOrEmpty(t.Categoria))
+                    {
+                        <span class="badge-categoria" data-cat="@t.Categoria">@t.Categoria</span>
+                    }
                     @if (!string.IsNullOrEmpty(t.Descripcion))
                     {
                         <div class="card-desc">@t.Descripcion</div>
@@ -83,13 +78,9 @@
                             {
                                 <span class="badge-deadline"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> @t.FechaLimite.Value.ToString("dd/MM/yyyy")</span>
                             }
-                            @if (!string.IsNullOrEmpty(t.CrewOperadorNombre))
+                            @if (!string.IsNullOrEmpty(t.OperadorNombre))
                             {
-                                <span class="badge-user"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> @t.CrewOperadorNombre</span>
-                            }
-                            else if (!string.IsNullOrEmpty(t.AsignadoANombre))
-                            {
-                                <span class="badge-user"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> @t.AsignadoANombre</span>
+                                <span class="badge-user"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> @t.OperadorNombre</span>
                             }
                         </div>
                         <button class="delete-btn" onclick="eliminarTarea(@t.Id, event)">
@@ -111,6 +102,10 @@
             {
                 <div class="kanban-card" draggable="true" data-id="@t.Id" data-orden="@t.Orden" onclick="editarTarea(@t.Id)">
                     <div class="card-title" style="text-decoration: line-through; color: var(--text-muted);">@t.Titulo</div>
+                    @if (!string.IsNullOrEmpty(t.Categoria))
+                    {
+                        <span class="badge-categoria" data-cat="@t.Categoria">@t.Categoria</span>
+                    }
                     @if (!string.IsNullOrEmpty(t.Descripcion))
                     {
                         <div class="card-desc">@t.Descripcion</div>
@@ -121,13 +116,9 @@
                             {
                                 <span class="badge-deadline"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> @t.FechaLimite.Value.ToString("dd/MM/yyyy")</span>
                             }
-                            @if (!string.IsNullOrEmpty(t.CrewOperadorNombre))
+                            @if (!string.IsNullOrEmpty(t.OperadorNombre))
                             {
-                                <span class="badge-user"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> @t.CrewOperadorNombre</span>
-                            }
-                            else if (!string.IsNullOrEmpty(t.AsignadoANombre))
-                            {
-                                <span class="badge-user"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> @t.AsignadoANombre</span>
+                                <span class="badge-user"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> @t.OperadorNombre</span>
                             }
                         </div>
                         <button class="delete-btn" onclick="eliminarTarea(@t.Id, event)">
@@ -165,16 +156,27 @@
                     <textarea name="Descripcion" id="formDescripcion" class="form-control" maxlength="500" placeholder="Detalles de la tarea..."></textarea>
                 </div>
                 <div class="form-group">
+                    <label>Categoría</label>
+                    <select name="Categoria" id="formCategoria" class="form-control">
+                        <option value="">Sin categoría</option>
+                        <option value="Montaje">Montaje</option>
+                        <option value="Desmontaje">Desmontaje</option>
+                        <option value="Audio/Video">Audio/Video</option>
+                        <option value="Iluminación">Iluminación</option>
+                        <option value="Logística">Logística</option>
+                        <option value="Decoración">Decoración</option>
+                        <option value="Personal">Personal</option>
+                        <option value="Catering">Catering</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label>Plazo (Fecha Límite)</label>
                     <input type="date" name="FechaLimite" id="formFechaLimite" class="form-control" />
                 </div>
                 <div class="form-group">
-                    <label>Responsable (Usuario)</label>
-                    @Html.DropDownList("AsignadoAId", ViewBag.Usuarios as SelectList, "Sin Asignar", new { @class = "form-control", id = "formAsignadoAId" })
-                </div>
-                <div class="form-group">
                     <label>Operador (Crew)</label>
-                    @Html.DropDownList("CrewOperadorId", ViewBag.Crew as SelectList, "Sin Asignar", new { @class = "form-control", id = "formCrewOperadorId" })
+                    @Html.DropDownList("OperadorId", ViewBag.Crew as SelectList, "Sin Asignar", new { @class = "form-control", id = "formOperadorId" })
                 </div>
             </form>
         </div>
@@ -280,6 +282,24 @@
         align-items: center;
         gap: 4px;
     }
+    .badge-categoria {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 4px;
+        margin-bottom: 6px;
+        color: #fff;
+    }
+    .badge-categoria[data-cat="Montaje"]        { background: #3b82f6; }
+    .badge-categoria[data-cat="Desmontaje"]      { background: #6b7280; }
+    .badge-categoria[data-cat="Audio/Video"]     { background: #8b5cf6; }
+    .badge-categoria[data-cat="Iluminación"]     { background: #f59e0b; }
+    .badge-categoria[data-cat="Logística"]       { background: #10b981; }
+    .badge-categoria[data-cat="Decoración"]      { background: #ec4899; }
+    .badge-categoria[data-cat="Personal"]        { background: #06b6d4; }
+    .badge-categoria[data-cat="Catering"]        { background: #f97316; }
+    .badge-categoria[data-cat="Otro"]            { background: #6b7280; }
     .delete-btn {
         background: none;
         border: none;
@@ -308,10 +328,20 @@
 
 @section scripts {
     <script>
-        // Store all tasks in a dictionary for easy editing
+        const catColors = {
+            'Montaje': '#3b82f6',
+            'Desmontaje': '#6b7280',
+            'Audio/Video': '#8b5cf6',
+            'Iluminación': '#f59e0b',
+            'Logística': '#10b981',
+            'Decoración': '#ec4899',
+            'Personal': '#06b6d4',
+            'Catering': '#f97316',
+            'Otro': '#6b7280'
+        };
+
         let tasksDict = {};
         
-        // Populate initial tasks
         @foreach (var t in Model)
         {
             <text>
@@ -320,13 +350,18 @@
                 Titulo: `@Html.Raw(t.Titulo.Replace("`", "\\`"))`,
                 Descripcion: `@Html.Raw(t.Descripcion?.Replace("`", "\\`") ?? "")`,
                 FechaLimite: '@(t.FechaLimite.HasValue ? t.FechaLimite.Value.ToString("yyyy-MM-dd") : "")',
-                AsignadoAId: '@t.AsignadoAId',
-                AsignadoANombre: '@t.AsignadoANombre',
-                CrewOperadorId: '@t.CrewOperadorId',
-                CrewOperadorNombre: '@t.CrewOperadorNombre',
+                Categoria: '@Html.Raw(t.Categoria?.Replace("'", "\\'") ?? "")',
+                OperadorId: '@t.OperadorId',
+                OperadorNombre: '@t.OperadorNombre',
                 Estado: '@t.Estado'
             };
             </text>
+        }
+
+        function catBadgeHtml(cat) {
+            if (!cat) return '';
+            const color = catColors[cat] || '#6b7280';
+            return `<span class="badge-categoria" style="background:${color}">${cat}</span>`;
         }
 
         function updateCounts() {
@@ -389,7 +424,6 @@
 
         function attachDragEvents(card) {
             card.addEventListener('dragstart', (e) => {
-                // Si el drag empezó desde un input/botón (como el delete), prevenir
                 if(e.target.tagName.toLowerCase() === 'button' || e.target.closest('button')) {
                     e.preventDefault();
                     return;
@@ -440,6 +474,7 @@
             document.getElementById('modalTitle').innerText = 'Nueva Tarea';
             document.getElementById('tareaForm').reset();
             document.getElementById('formId').value = "0";
+            document.getElementById('formCategoria').value = '';
             document.getElementById('tareaModal').style.display = 'flex';
         }
 
@@ -452,8 +487,8 @@
             document.getElementById('formTitulo').value = tarea.Titulo;
             document.getElementById('formDescripcion').value = tarea.Descripcion || '';
             document.getElementById('formFechaLimite').value = tarea.FechaLimite || '';
-            document.getElementById('formAsignadoAId').value = tarea.AsignadoAId || '';
-            document.getElementById('formCrewOperadorId').value = tarea.CrewOperadorId || '';
+            document.getElementById('formCategoria').value = tarea.Categoria || '';
+            document.getElementById('formOperadorId').value = tarea.OperadorId || '';
             document.getElementById('formEstado').value = tarea.Estado;
 
             document.getElementById('tareaModal').style.display = 'flex';
@@ -463,10 +498,33 @@
             document.getElementById('tareaModal').style.display = 'none';
         }
 
+        function parseServerDate(dateStr) {
+            if (!dateStr) return '';
+            var match = dateStr.match(/\/Date\((\d+)\)\//);
+            if (match) {
+                var d = new Date(parseInt(match[1]));
+                var day = String(d.getDate()).padStart(2, '0');
+                var month = String(d.getMonth() + 1).padStart(2, '0');
+                var year = d.getFullYear();
+                return year + '-' + month + '-' + day;
+            }
+            return dateStr.substring(0, 10);
+        }
+
         function formatDateArg(dateString) {
             if(!dateString) return '';
-            const d = new Date(dateString);
-            return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            var match = dateString.match(/\/Date\((\d+)\)\//);
+            var d;
+            if (match) {
+                d = new Date(parseInt(match[1]));
+            } else {
+                d = new Date(dateString + 'T00:00:00');
+            }
+            if (isNaN(d.getTime())) return '';
+            var day = String(d.getDate()).padStart(2, '0');
+            var month = String(d.getMonth() + 1).padStart(2, '0');
+            var year = d.getFullYear();
+            return day + '/' + month + '/' + year;
         }
 
         function guardarTarea() {
@@ -488,23 +546,22 @@
             .then(data => {
                 if(data.success) {
                     const t = data.tarea;
-                    // Actualizar diccionario
                     tasksDict[t.Id] = {
                         Id: t.Id,
                         Titulo: t.Titulo,
                         Descripcion: t.Descripcion,
-                        FechaLimite: t.FechaLimite ? t.FechaLimite.substring(0,10) : '',
-                        AsignadoAId: t.AsignadoAId,
-                        AsignadoANombre: t.AsignadoANombre,
-                        CrewOperadorId: t.CrewOperadorId,
-                        CrewOperadorNombre: t.CrewOperadorNombre,
+                        FechaLimite: parseServerDate(t.FechaLimite),
+                        Categoria: t.Categoria || '',
+                        OperadorId: t.OperadorId,
+                        OperadorNombre: t.OperadorNombre,
                         Estado: t.Estado
                     };
 
-                    const displayName = t.CrewOperadorNombre || t.AsignadoANombre || '';
+                    const fechaParsed = parseServerDate(t.FechaLimite);
+                    const displayName = t.OperadorNombre || '';
                     const metaHtml = `
                         <div class="meta-info">
-                            ${t.FechaLimite ? `<span class="badge-deadline"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ${formatDateArg(t.FechaLimite)}</span>` : ''}
+                            ${fechaParsed ? `<span class="badge-deadline"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ${formatDateArg(fechaParsed)}</span>` : ''}
                             ${displayName ? `<span class="badge-user"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ${displayName}</span>` : ''}
                         </div>
                         <button class="delete-btn" onclick="eliminarTarea(${t.Id}, event)">
@@ -513,15 +570,28 @@
                     `;
 
                     if(isEdit) {
-                        // Actualizar DOM existente
                         const card = document.querySelector(`.kanban-card[data-id="${t.Id}"]`);
                         card.querySelector('.card-title').innerText = t.Titulo;
                         
-                        // Descripcion
+                        let catEl = card.querySelector('.badge-categoria');
+                        if(t.Categoria) {
+                            if(!catEl) {
+                                card.querySelector('.card-title').insertAdjacentHTML('afterend', catBadgeHtml(t.Categoria));
+                            } else {
+                                catEl.setAttribute('data-cat', t.Categoria);
+                                catEl.style.background = catColors[t.Categoria] || '#6b7280';
+                                catEl.innerText = t.Categoria;
+                            }
+                        } else if(catEl) {
+                            catEl.remove();
+                        }
+
                         let descEl = card.querySelector('.card-desc');
                         if(t.Descripcion) {
                             if(!descEl) {
-                                card.querySelector('.card-title').insertAdjacentHTML('afterend', `<div class="card-desc">${t.Descripcion}</div>`);
+                                const catNode = card.querySelector('.badge-categoria');
+                                const insertAfter = catNode || card.querySelector('.card-title');
+                                insertAfter.insertAdjacentHTML('afterend', `<div class="card-desc">${t.Descripcion}</div>`);
                             } else {
                                 descEl.innerText = t.Descripcion;
                             }
@@ -529,14 +599,14 @@
                             descEl.remove();
                         }
 
-                        // Meta
                         card.querySelector('.card-meta').innerHTML = metaHtml;
                     } else {
-                        // Agregar nueva
                         const col = document.getElementById('col-Pendiente');
+                        const catBadge = catBadgeHtml(t.Categoria);
                         const html = `
                             <div class="kanban-card" draggable="true" data-id="${t.Id}" data-orden="${t.Orden}" onclick="editarTarea(${t.Id})">
                                 <div class="card-title">${t.Titulo}</div>
+                                ${catBadge}
                                 ${t.Descripcion ? `<div class="card-desc">${t.Descripcion}</div>` : ''}
                                 <div class="card-meta">
                                     ${metaHtml}
@@ -550,33 +620,34 @@
 
                     closeTareaModal();
                 } else {
-                    alert('Error: ' + data.message);
+                    window.EventHubSwal.error('Error: ' + data.message);
                 }
             });
         }
 
         function eliminarTarea(id, event) {
-            event.stopPropagation(); // Evitar abrir modal de edición
-            if(!confirm("¿Seguro que deseas eliminar esta tarea?")) return;
+            event.stopPropagation();
+            window.EventHubSwal.confirm('¿Seguro que deseas eliminar esta tarea?', function() {
+                const fd = new FormData();
+                fd.append('id', id);
+                fd.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
 
-            const fd = new FormData();
-            fd.append('id', id);
-            fd.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
-
-            fetch('@Url.Action("EliminarTareaAjax", "Eventos")', {
-                method: 'POST',
-                body: fd
-            })
-            .then(r => r.json())
-            .then(data => {
-                if(data.success) {
-                    const btn = event.currentTarget;
-                    btn.closest('.kanban-card').remove();
-                    delete tasksDict[id];
-                    updateCounts();
-                } else {
-                    alert('Error: ' + data.message);
-                }
+                fetch('@Url.Action("EliminarTareaAjax", "Eventos")', {
+                    method: 'POST',
+                    body: fd
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if(data.success) {
+                        const btn = event.currentTarget;
+                        btn.closest('.kanban-card').remove();
+                        delete tasksDict[id];
+                        updateCounts();
+                        window.EventHubSwal.success('Tarea eliminada.');
+                    } else {
+                        window.EventHubSwal.error('Error: ' + data.message);
+                    }
+                });
             });
         }
     </script>

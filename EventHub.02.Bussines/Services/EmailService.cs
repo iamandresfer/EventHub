@@ -25,7 +25,7 @@ namespace EventHub._02.Bussines.Services
             _smtpPass = ConfigurationManager.AppSettings["SmtpPass"] ?? "";
             _smtpSsl = bool.TryParse(ConfigurationManager.AppSettings["SmtpSsl"], out var ssl) && ssl;
             _fromEmail = ConfigurationManager.AppSettings["SmtpFromEmail"] ?? "noreply@eventhub.local";
-            _fromName = ConfigurationManager.AppSettings["SmtpFromName"] ?? "EventProduction Hub";
+            _fromName = ConfigurationManager.AppSettings["SmtpFromName"] ?? "EventHub";
             _appBaseUrl = ConfigurationManager.AppSettings["AppBaseUrl"] ?? "https://localhost:44353";
         }
 
@@ -40,7 +40,7 @@ namespace EventHub._02.Bussines.Services
                     <p style='color: #6c757d; font-size: 14px;'>Este código expira en 10 minutos.</p>
                     <p style='color: #6c757d; font-size: 14px;'>Si no solicitaste este código, ignora este mensaje.</p>
                     <hr style='border: none; border-top: 1px solid #dee2e6; margin: 24px 0;'>
-                    <p style='color: #adb5bd; font-size: 12px;'>EventProduction Hub - Sistema Integral de Gestión de Eventos</p>
+                    <p style='color: #adb5bd; font-size: 12px;'>EventHub - Sistema Integral de Gestión de Eventos</p>
                 </div>";
 
             await SendEmailAsync(toEmail, subject, body);
@@ -57,7 +57,7 @@ namespace EventHub._02.Bussines.Services
                     <p style='color: #6c757d; font-size: 14px;'>Este código expira en 10 minutos.</p>
                     <p style='color: #6c757d; font-size: 14px;'>Si no solicitaste restablecer tu contraseña, ignora este mensaje.</p>
                     <hr style='border: none; border-top: 1px solid #dee2e6; margin: 24px 0;'>
-                    <p style='color: #adb5bd; font-size: 12px;'>EventProduction Hub - Sistema Integral de Gestión de Eventos</p>
+                    <p style='color: #adb5bd; font-size: 12px;'>EventHub - Sistema Integral de Gestión de Eventos</p>
                 </div>";
 
             await SendEmailAsync(toEmail, subject, body);
@@ -73,7 +73,7 @@ namespace EventHub._02.Bussines.Services
                     <p style='color: #6c757d; font-size: 15px;'>Ya puedes iniciar sesión y comenzar a gestionar tus eventos.</p>
                     <p style='text-align: center; margin: 24px 0;'><a href='{_appBaseUrl}/Auth/Login' style='display: inline-block; padding: 12px 24px; background: #4361ee; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;'>Iniciar Sesión</a></p>
                     <hr style='border: none; border-top: 1px solid #dee2e6; margin: 24px 0;'>
-                    <p style='color: #adb5bd; font-size: 12px;'>EventProduction Hub - Sistema Integral de Gestión de Eventos</p>
+                    <p style='color: #adb5bd; font-size: 12px;'>EventHub - Sistema Integral de Gestión de Eventos</p>
                 </div>";
 
             await SendEmailAsync(toEmail, subject, body);

@@ -1,6 +1,7 @@
 @model EventHub._02.Bussines.DTOs.ClienteDto
 @{
     ViewBag.Title = Model.Nombre;
+    ViewBag.HideSectionHeader = true;
     var eventos = ViewBag.Eventos as List<EventHub._02.Bussines.DTOs.EventoListDto>;
 }
 
@@ -100,7 +101,7 @@
                             <td>@evt.VenueNombre</td>
                             <td>@evt.FechaInicio.ToString("dd/MM/yyyy")</td>
                             <td><span class="badge badge-@evt.Estado.ToLower()">@evt.Estado</span></td>
-                            <td>@evt.PresupuestoEstimado.ToString("C2")</td>
+                            <td>@(evt.PresupuestoEstimado.HasValue ? evt.PresupuestoEstimado.Value.ToString("C2") : "-")</td>
                         </tr>
                     }
                 </tbody>
@@ -174,7 +175,7 @@
 
 <style>
     .client-dashboard {
-        margin: -24px -32px;
+        margin: 24px -32px -24px;
     }
     .client-banner {
         position: relative;
@@ -392,11 +393,11 @@
                 if (data.success) {
                     window.location.reload();
                 } else {
-                    alert(data.message || 'Error al guardar');
+                    window.EventHubSwal.error(data.message || 'Error al guardar');
                 }
             })
             .catch(function() {
-                alert('Error de conexión');
+                window.EventHubSwal.error('Error de conexión');
             });
         });
     </script>

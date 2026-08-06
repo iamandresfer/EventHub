@@ -30,9 +30,22 @@ namespace EventHub._02.Bussines.DTOs
         public string Estado { get; set; }
 
         [Display(Name = "Presupuesto")]
-        public decimal PresupuestoEstimado { get; set; }
+        public decimal? PresupuestoEstimado { get; set; }
+
+        [Display(Name = "Gasto Real")]
+        public decimal? GastoReal { get; set; }
+
+        [Display(Name = "Total Ingresos")]
+        public decimal? TotalIngresos { get; set; }
 
         [Display(Name = "Foto de Portada")]
         public string CoverPhotoUrl { get; set; }
+
+        public int ClienteId { get; set; }
+        public int VenueId { get; set; }
+        public int TipoEventoId { get; set; }
+        public TimeSpan HoraInicio { get; set; }
+        public TimeSpan HoraFin { get; set; }
+        public string Descripcion { get; set; }
     }
 }

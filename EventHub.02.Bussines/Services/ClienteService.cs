@@ -134,5 +134,41 @@ namespace EventHub._02.Bussines.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<(List<ClienteDto> Items, int Total)> GetPagedAsync(int page, int pageSize, string search = null)
+        {
+            var query = _context.Clientes.AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                var s = search.ToLower();
+                query = query.Where(c =>
+                    c.Nombre.ToLower().Contains(s) ||
+                    c.Ruc.Contains(s) ||
+                    c.Email.ToLower().Contains(s));
+            }
+
+            var total = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(c => c.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(c => new ClienteDto
+                {
+                    Id = c.Id,
+                    Nombre = c.Nombre,
+                    Ruc = c.Ruc,
+                    Email = c.Email,
+                    Telefono = c.Telefono,
+                    Direccion = c.Direccion,
+                    Contacto = c.Contacto,
+                    Clasificacion = c.Clasificacion,
+                    Estado = c.Estado
+                })
+                .ToListAsync();
+
+            return (items, total);
+        }
     }
 }

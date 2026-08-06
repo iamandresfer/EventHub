@@ -1,12 +1,10 @@
 @model EventHub._02.Bussines.DTOs.ClienteDto
 @{
     ViewBag.Title = "Nuevo Cliente";
+    ViewBag.HeaderTitle = "Nuevo Cliente";
+    ViewBag.HeaderSubtitle = "Ingrese los datos del cliente";
+    ViewBag.BackUrl = Url.Action("Index");
 }
-
-<div class="page-header">
-    <h1>Nuevo Cliente</h1>
-    <p>Ingrese los datos del cliente</p>
-</div>
 
 @using (Html.BeginForm())
 {

@@ -1,4 +1,6 @@
-﻿@using System.Web.Optimization
+﻿@using System.Web
+@using System.Web.Optimization
+@using EventHub._01.Web.Helpers
 <!DOCTYPE html>
 <html>
 <head>
@@ -62,8 +64,10 @@
         }
 
         .sidebar.collapsed .sidebar-header {
-            padding: 20px;
+            height: 80px;
+            padding: 0;
             text-align: center;
+            justify-content: center;
         }
 
         .sidebar.collapsed .sidebar-header::after {
@@ -146,7 +150,11 @@
         }
 
         .sidebar-header {
-            padding: 20px;
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 20px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
@@ -228,9 +236,73 @@
         .main-content {
             margin-left: var(--sidebar-width);
             flex: 1;
-            padding: 24px 32px;
+            padding: 0 32px 24px;
             min-height: 100vh;
             transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .section-header {
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            height: 80px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-header--hidden {
+            display: none;
+        }
+
+        .section-header__inner {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 0 8px;
+        }
+
+        .section-header__back {
+            padding: 6px 10px;
+            flex-shrink: 0;
+        }
+
+        .section-header__titles {
+            min-width: 0;
+            flex: 0 1 auto;
+        }
+
+        .section-header__titles h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .section-header__titles p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin: 2px 0 0 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .section-header__spacer {
+            flex: 1;
+            min-width: 16px;
+        }
+
+        .section-header__actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
         }
 
         .sidebar.collapsed:not(:hover):not(.hover-expanded) ~ .main-content {
@@ -270,8 +342,10 @@
             }
             .main-content {
                 margin-left: 0;
-                padding: 20px 16px;
-                padding-top: 60px;
+                padding: 0 16px 20px;
+            }
+            .section-header__inner {
+                padding-left: 56px;
             }
             .mobile-toggle {
                 display: flex;
@@ -536,6 +610,14 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 <span class="nav-label">Eventos</span>
             </a>
+            <a href="@Url.Action("Index", "Crew")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Crew" ? "active" : "")" data-tooltip="Crew">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span class="nav-label">Crew</span>
+            </a>
+            <a href="@Url.Action("Index", "Presupuesto")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Presupuesto" ? "active" : "")" data-tooltip="Presupuesto">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <span class="nav-label">Presupuesto</span>
+            </a>
             <a href="@Url.Action("Index", "Clientes")" class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Clientes" ? "active" : "")" data-tooltip="Clientes">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 <span class="nav-label">Clientes</span>
@@ -555,6 +637,26 @@
     </aside>
 
     <main class="main-content">
+        <header class="section-header @(ViewBag.HideSectionHeader == true ? "section-header--hidden" : "")">
+            <div class="section-header__inner">
+                @if (ViewBag.BackUrl != null)
+                {
+                    <a href="@ViewBag.BackUrl" class="btn btn-outline btn-sm section-header__back" aria-label="Volver">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                    </a>
+                }
+                <div class="section-header__titles">
+                    <h1>@ViewBag.HeaderTitle</h1>
+                    @if (ViewBag.HeaderSubtitle != null)
+                    {
+                        <p>@ViewBag.HeaderSubtitle</p>
+                    }
+                </div>
+                <div class="section-header__spacer"></div>
+                @RenderSection("headerActions", required: false)
+                @{ Html.RenderPartial("_NotificationBell"); }
+            </div>
+        </header>
         @RenderBody()
     </main>
 
@@ -603,10 +705,151 @@
                 sidebar.classList.remove('hover-expanded');
             });
         }
+
+        // Notification Bell
+        function toggleNotifPanel() {
+            var panel = document.getElementById('notifPanel');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+                loadNotificaciones();
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        function loadNotificaciones() {
+            fetch('@Url.Action("ObtenerRecientes", "Home")')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    updateBadge(data.noLeidas);
+                    var list = document.getElementById('notifList');
+                    if (!data.notificaciones || data.notificaciones.length === 0) {
+                        list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">Sin notificaciones</div>';
+                        return;
+                    }
+                    list.innerHTML = data.notificaciones.map(function(n) {
+                        var tipoColor = n.Tipo === 'TareaCreada' ? '#3b82f6' : n.Tipo === 'TareaCompletada' ? '#10b981' : '#f59e0b';
+                        var bgColor = n.Leida ? 'transparent' : 'var(--primary-light)';
+                        var fecha = new Date(n.FechaCreacion.replace(/\/Date\((\d+)\)\//, function(m, ts) { return new Date(parseInt(ts)).toISOString(); }));
+                        var fechaStr = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                        return '<div onclick="marcarLeida(' + n.Id + ')" style="display:flex;gap:10px;padding:12px 16px;background:' + bgColor + ';cursor:pointer;border-bottom:1px solid var(--border);">' +
+                            '<div style="flex-shrink:0;width:8px;height:8px;border-radius:50%;background:' + tipoColor + ';margin-top:6px;"></div>' +
+                            '<div style="flex:1;min-width:0;">' +
+                            '<div style="font-size:13px;line-height:1.4;">' + n.Mensaje + '</div>' +
+                            '<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">' + fechaStr + '</div>' +
+                            '</div></div>';
+                    }).join('');
+                }
+            });
+        }
+
+        function updateBadge(count) {
+            var badge = document.getElementById('notifBadge');
+            if (count > 0) {
+                badge.style.display = 'flex';
+                badge.textContent = count > 99 ? '99+' : count;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function marcarLeida(id) {
+            var fd = new FormData();
+            fd.append('id', id);
+            fd.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+            fetch('@Url.Action("MarcarLeida", "Home")', { method: 'POST', body: fd })
+            .then(function(r) { return r.json(); })
+            .then(function(data) { if (data.success) loadNotificaciones(); });
+        }
+
+        function marcarTodasLeidas() {
+            var fd = new FormData();
+            fd.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+            fetch('@Url.Action("MarcarTodasLeidas", "Home")', { method: 'POST', body: fd })
+            .then(function(r) { return r.json(); })
+            .then(function(data) { if (data.success) loadNotificaciones(); });
+        }
+
+        // Load unread count on page load
+        (function() {
+            fetch('@Url.Action("ObtenerRecientes", "Home")')
+            .then(function(r) { return r.json(); })
+            .then(function(data) { if (data.success) updateBadge(data.noLeidas); });
+        })();
+
+        // Close panel when clicking outside
+        document.addEventListener('click', function(e) {
+            var bell = document.getElementById('notifBell');
+            if (bell && !bell.contains(e.target)) {
+                document.getElementById('notifPanel').style.display = 'none';
+            }
+        });
     </script>
 
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/sweetalert")
+    @Scripts.Render("~/bundles/echarts")
+    <script>
+        // Helper global para SweetAlert
+        window.EventHubSwal = {
+            success: function (message) {
+                Swal.fire({ icon: 'success', title: 'Éxito', text: message, confirmButtonColor: '#2563EB' });
+            },
+            error: function (message) {
+                Swal.fire({ icon: 'error', title: 'Error', text: message, confirmButtonColor: '#2563EB' });
+            },
+            info: function (message) {
+                Swal.fire({ icon: 'info', title: 'Información', text: message, confirmButtonColor: '#2563EB' });
+            },
+            confirm: function (message, onConfirm) {
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: message,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc2626',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Sí, continuar',
+                    cancelButtonText: 'Cancelar'
+                }).then(function (result) {
+                    if (result.isConfirmed && onConfirm) onConfirm();
+                });
+            },
+            confirmForm: function (form, message) {
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: message,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc2626',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then(function (result) {
+                    if (result.isConfirmed) form.submit();
+                });
+                return false;
+            },
+            loading: function () {
+                Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: function () { Swal.showLoading(); } });
+            },
+            close: function () {
+                Swal.close();
+            }
+        };
+
+        // Mostrar mensajes TempData automáticamente
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>window.EventHubSwal.success('@Html.Raw(HttpUtility.JavaScriptStringEncode((string)TempData["SuccessMessage"]))');</text>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <text>window.EventHubSwal.error('@Html.Raw(HttpUtility.JavaScriptStringEncode((string)TempData["ErrorMessage"]))');</text>
+        }
+    </script>
     @RenderSection("scripts", required: false)
 </body>
 </html>

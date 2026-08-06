@@ -50,12 +50,14 @@ namespace EventHub._03.Data.Entities
         [Column("eve_hora_fin")]
         public TimeSpan HoraFin { get; set; }
 
-        [Required]
         [Column("eve_presupuesto_estimado")]
-        public decimal PresupuestoEstimado { get; set; }
+        public decimal? PresupuestoEstimado { get; set; }
 
         [Column("eve_gasto_real")]
         public decimal? GastoReal { get; set; }
+
+        [Column("eve_total_ingresos")]
+        public decimal? TotalIngresos { get; set; }
 
         [Required]
         [Column("eve_estado")]

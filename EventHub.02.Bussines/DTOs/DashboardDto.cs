@@ -12,5 +12,7 @@ namespace EventHub._02.Bussines.DTOs
         public int TotalClientes { get; set; }
         public int ClientesActivos { get; set; }
         public List<EventoListDto> ProximosEventos { get; set; }
+        public List<EventoListDto> EventosFinalizadosRecientes { get; set; } = new List<EventoListDto>();
+        public List<System.DateTime> EventosActividad { get; set; } = new List<System.DateTime>();
     }
 }

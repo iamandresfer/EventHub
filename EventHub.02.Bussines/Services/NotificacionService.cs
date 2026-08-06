@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using EventHub._02.Bussines.DTOs;
 using EventHub._03.Data;
@@ -10,10 +11,12 @@ namespace EventHub._02.Bussines.Services
     public class NotificacionService : INotificacionService
     {
         private readonly EventHubContext _context;
+        private readonly string _appBaseUrl;
 
         public NotificacionService()
         {
             _context = new EventHubContext();
+            _appBaseUrl = ConfigurationManager.AppSettings["AppBaseUrl"] ?? "https://localhost:44353";
         }
 
         public List<NotificacionDto> ObtenerPorEvento(int eventoId)
@@ -102,37 +105,52 @@ namespace EventHub._02.Bussines.Services
             _context.SaveChanges();
 
             // Enviar email de forma asíncrona (fire and forget)
+            // IMPORTANTE: usamos un contexto nuevo dentro del Task.Run porque DbContext NO es thread-safe.
+            // El contexto principal puede quedar disposed antes de que el task secundario complete.
+            var notifId = notif.Id;
             try
             {
                 var subject = $"EventHub - {tipo}";
-                var body = ConstruirBodyEmail(tipo, nombreDestino, mensaje, nombreEvento, tareaTitulo);
+                var body = ConstruirBodyEmail(tipo, nombreDestino, mensaje, nombreEvento, tareaTitulo, eventoId);
 
                 System.Threading.Tasks.Task.Run(async () =>
                 {
-                    try
+                    using (var asyncContext = new EventHubContext())
                     {
-                        await emailService.SendGenericEmailAsync(emailDestino, subject, body);
+                        var notifAsync = asyncContext.Notificaciones.Find(notifId);
+                        try
+                        {
+                            await emailService.SendGenericEmailAsync(emailDestino, subject, body);
 
-                        notif.Enviada = true;
-                        notif.FechaEnvio = DateTime.Now;
-                        _context.SaveChanges();
-                    }
-                    catch (Exception ex)
-                    {
-                        notif.Error = ex.Message;
-                        _context.SaveChanges();
+                            if (notifAsync != null)
+                            {
+                                notifAsync.Enviada = true;
+                                notifAsync.FechaEnvio = DateTime.Now;
+                                asyncContext.SaveChanges();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[NotificacionService] Error enviando email: {ex.Message}");
+                            if (notifAsync != null)
+                            {
+                                notifAsync.Error = ex.Message.Length > 500 ? ex.Message.Substring(0, 500) : ex.Message;
+                                asyncContext.SaveChanges();
+                            }
+                        }
                     }
                 });
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[NotificacionService] Error iniciando task de email: {ex.Message}");
                 notif.Error = ex.Message;
                 _context.SaveChanges();
             }
         }
 
         private string ConstruirBodyEmail(string tipo, string nombreDestino, string mensaje,
-            string nombreEvento, string tareaTitulo)
+            string nombreEvento, string tareaTitulo, int? eventoId)
         {
             var icono = tipo switch
             {
@@ -152,6 +170,10 @@ namespace EventHub._02.Bussines.Services
                 _ => "#6c757d"
             };
 
+            var botonVerTarea = eventoId.HasValue
+                ? $"<p style='text-align:center; margin:24px 0;'><a href='{_appBaseUrl}/Eventos/Tareas/{eventoId.Value}' style='display:inline-block; padding:12px 24px; background:{color}; color:white; text-decoration:none; border-radius:8px; font-weight:600;'>Ver Tarea →</a></p>"
+                : "";
+
             return $@"
                 <div style='font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif; max-width: 500px; margin: 0 auto; padding: 32px;'>
                     <div style='text-align: center; margin-bottom: 24px;'>
@@ -163,8 +185,9 @@ namespace EventHub._02.Bussines.Services
                     </div>
                     {(nombreEvento != null ? $"<p style='color: #6c757d; font-size: 14px;'><strong>Evento:</strong> {nombreEvento}</p>" : "")}
                     {(tareaTitulo != null ? $"<p style='color: #6c757d; font-size: 14px;'><strong>Tarea:</strong> {tareaTitulo}</p>" : "")}
+                    {botonVerTarea}
                     <hr style='border: none; border-top: 1px solid #dee2e6; margin: 24px 0;'>
-                    <p style='color: #adb5bd; font-size: 12px; text-align: center;'>EventProduction Hub - Sistema Integral de Gestión de Eventos</p>
+                    <p style='color: #adb5bd; font-size: 12px; text-align: center;'>EventHub - Sistema Integral de Gestión de Eventos</p>
                 </div>";
         }
     }

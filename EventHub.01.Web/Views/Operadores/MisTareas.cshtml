@@ -1,0 +1,214 @@
+@model IEnumerable<EventHub._02.Bussines.DTOs.TareaDto>
+@{
+    ViewBag.Title = "Mis Tareas";
+    ViewBag.HeaderTitle = "Mis Tareas";
+    ViewBag.HeaderSubtitle = "Tareas asignadas";
+    ViewBag.BackUrl = Url.Action("Index", "Home");
+}
+
+<div class="kanban-board">
+    <!-- Columna PENDIENTE -->
+    <div class="kanban-column">
+        <div class="kanban-header">
+            <h3>Pendiente <span class="count-badge">@Model.Count(x => x.Estado == "Pendiente")</span></h3>
+        </div>
+        <div class="kanban-items">
+            @foreach (var t in Model.Where(x => x.Estado == "Pendiente"))
+            {
+                <div class="kanban-card">
+                    <div class="card-title">@t.Titulo</div>
+                    @if (!string.IsNullOrEmpty(t.Categoria))
+                    {
+                        var colorMap = new Dictionary<string, string> {
+                            {"Montaje", "#3b82f6"}, {"Desmontaje", "#6b7280"}, {"Audio/Video", "#8b5cf6"},
+                            {"Iluminación", "#f59e0b"}, {"Logística", "#10b981"}, {"Decoración", "#ec4899"},
+                            {"Personal", "#06b6d4"}, {"Catering", "#f97316"}, {"Otro", "#6b7280"}
+                        };
+                        var color = colorMap.ContainsKey(t.Categoria) ? colorMap[t.Categoria] : "#6b7280";
+                        <div style="margin-bottom:6px;">
+                            <span style="font-size:11px; font-weight:600; padding:2px 8px; border-radius:12px; background:@(color)22; color:@color;">@t.Categoria</span>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(t.Descripcion))
+                    {
+                        <div class="card-desc">@t.Descripcion</div>
+                    }
+                    <div class="card-meta">
+                        <div class="meta-info">
+                            @if (t.FechaLimite.HasValue)
+                            {
+                                <span class="badge-deadline"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> @t.FechaLimite.Value.ToString("dd/MM/yyyy")</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Columna EN PROGRESO -->
+    <div class="kanban-column">
+        <div class="kanban-header">
+            <h3>En Progreso <span class="count-badge">@Model.Count(x => x.Estado == "EnProgreso")</span></h3>
+        </div>
+        <div class="kanban-items">
+            @foreach (var t in Model.Where(x => x.Estado == "EnProgreso"))
+            {
+                <div class="kanban-card">
+                    <div class="card-title">@t.Titulo</div>
+                    @if (!string.IsNullOrEmpty(t.Categoria))
+                    {
+                        var colorMap = new Dictionary<string, string> {
+                            {"Montaje", "#3b82f6"}, {"Desmontaje", "#6b7280"}, {"Audio/Video", "#8b5cf6"},
+                            {"Iluminación", "#f59e0b"}, {"Logística", "#10b981"}, {"Decoración", "#ec4899"},
+                            {"Personal", "#06b6d4"}, {"Catering", "#f97316"}, {"Otro", "#6b7280"}
+                        };
+                        var color = colorMap.ContainsKey(t.Categoria) ? colorMap[t.Categoria] : "#6b7280";
+                        <div style="margin-bottom:6px;">
+                            <span style="font-size:11px; font-weight:600; padding:2px 8px; border-radius:12px; background:@(color)22; color:@color;">@t.Categoria</span>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(t.Descripcion))
+                    {
+                        <div class="card-desc">@t.Descripcion</div>
+                    }
+                    <div class="card-meta">
+                        <div class="meta-info">
+                            @if (t.FechaLimite.HasValue)
+                            {
+                                <span class="badge-deadline"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> @t.FechaLimite.Value.ToString("dd/MM/yyyy")</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Columna COMPLETADO -->
+    <div class="kanban-column">
+        <div class="kanban-header">
+            <h3>Completado <span class="count-badge">@Model.Count(x => x.Estado == "Completado")</span></h3>
+        </div>
+        <div class="kanban-items">
+            @foreach (var t in Model.Where(x => x.Estado == "Completado"))
+            {
+                <div class="kanban-card">
+                    <div class="card-title" style="text-decoration: line-through; color: var(--text-muted);">@t.Titulo</div>
+                    @if (!string.IsNullOrEmpty(t.Categoria))
+                    {
+                        var colorMap = new Dictionary<string, string> {
+                            {"Montaje", "#3b82f6"}, {"Desmontaje", "#6b7280"}, {"Audio/Video", "#8b5cf6"},
+                            {"Iluminación", "#f59e0b"}, {"Logística", "#10b981"}, {"Decoración", "#ec4899"},
+                            {"Personal", "#06b6d4"}, {"Catering", "#f97316"}, {"Otro", "#6b7280"}
+                        };
+                        var color = colorMap.ContainsKey(t.Categoria) ? colorMap[t.Categoria] : "#6b7280";
+                        <div style="margin-bottom:6px;">
+                            <span style="font-size:11px; font-weight:600; padding:2px 8px; border-radius:12px; background:@(color)22; color:@color;">@t.Categoria</span>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(t.Descripcion))
+                    {
+                        <div class="card-desc">@t.Descripcion</div>
+                    }
+                    <div class="card-meta">
+                        <div class="meta-info">
+                            @if (t.FechaLimite.HasValue)
+                            {
+                                <span class="badge-deadline"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> @t.FechaLimite.Value.ToString("dd/MM/yyyy")</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .kanban-board {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        overflow-x: auto;
+        padding-bottom: 20px;
+        min-height: calc(100vh - 200px);
+    }
+    .kanban-column {
+        flex: 1;
+        min-width: 300px;
+        background: #f1f5f9;
+        border-radius: 12px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+    }
+    .kanban-header {
+        margin-bottom: 16px;
+    }
+    .kanban-header h3 {
+        font-size: 15px;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--text);
+    }
+    .count-badge {
+        background: #e2e8f0;
+        color: var(--text-muted);
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+    }
+    .kanban-items {
+        flex: 1;
+        min-height: 50px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .kanban-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 14px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        transition: box-shadow 0.2s;
+    }
+    .kanban-card:hover {
+        border-color: var(--primary);
+    }
+    .card-title {
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+    .card-desc {
+        font-size: 12px;
+        color: var(--text-muted);
+        line-height: 1.4;
+    }
+    .card-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+    }
+    .meta-info {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .badge-deadline {
+        font-size: 11px;
+        background: #f1f5f9;
+        color: var(--text-muted);
+        padding: 2px 6px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+</style>

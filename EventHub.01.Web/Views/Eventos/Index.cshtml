@@ -1,17 +1,20 @@
 @model List<EventHub._02.Bussines.DTOs.EventoListDto>
+@using EventHub._01.Web.Helpers
 @{
     ViewBag.Title = "Eventos";
+    ViewBag.HeaderTitle = "Eventos";
+    ViewBag.HeaderSubtitle = "Gestión de eventos";
+    ViewBag.BackUrl = Url.Action("Index", "Home");
+    var activeEvents = Model.Where(e => e.Estado != "Finalizado" && e.Estado != "Cancelado").ToList();
+    var finishedEvents = Model.Where(e => e.Estado == "Finalizado" || e.Estado == "Cancelado").ToList();
 }
 
-<div class="page-header">
-    <h1>Eventos</h1>
-    <p>Gestión de eventos de producción</p>
-</div>
-
-@if (TempData["SuccessMessage"] != null)
-{
-    <div style="background:#d1fae5;border:1px solid #059669;border-radius:8px;padding:12px 16px;color:#065f46;font-size:14px;margin-bottom:16px;">
-        @TempData["SuccessMessage"]
+@section headerActions {
+    <div class="section-header__actions">
+        <a href="@Url.Action("Create")" class="btn btn-primary btn-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo Evento
+        </a>
     </div>
 }
 
@@ -30,35 +33,30 @@
             <button type="submit" class="btn btn-primary btn-sm">Buscar</button>
         </form>
     </div>
-    <a href="@Url.Action("Create")" class="btn btn-primary">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Nuevo Evento
-    </a>
 </div>
 
+<!-- Active Events Table -->
 <div class="card" style="padding:0;overflow:hidden;">
-    <table class="table">
+    <table class="table" id="activeTable">
         <thead>
             <tr>
-                <th>Código</th>
-                <th>Evento</th>
-                <th>Cliente</th>
-                <th>Lugar</th>
-                <th>Fecha</th>
-                <th>Estado</th>
-                <th>Presupuesto</th>
+                <th class="sortable" data-col="0" data-type="string">Evento</th>
+                <th class="sortable" data-col="1" data-type="string">Cliente</th>
+                <th class="sortable" data-col="2" data-type="string">Lugar</th>
+                <th class="sortable" data-col="3" data-type="date">Fecha</th>
+                <th class="sortable" data-col="4" data-type="status">Estado</th>
+                <th class="sortable" data-col="5" data-type="currency">Presupuesto</th>
                 <th style="text-align:right;">Acciones</th>
             </tr>
         </thead>
         <tbody>
-            @if (Model.Count == 0)
+            @if (activeEvents.Count == 0)
             {
-                <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted);">No hay eventos registrados</td></tr>
+                <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted);">No hay eventos activos</td></tr>
             }
-            @foreach (var item in Model)
+            @foreach (var item in activeEvents)
             {
                 <tr class="event-row" data-href="@Url.Action("Details", new { id = item.Id })" style="cursor:pointer;">
-                    <td style="font-weight:600;font-size:13px;">@item.Codigo</td>
                     <td><a href="@Url.Action("Details", new { id = item.Id })" style="color:var(--primary);text-decoration:none;font-weight:600;">@item.Nombre</a></td>
                     <td>@item.ClienteNombre</td>
                     <td>@item.VenueNombre</td>
@@ -115,13 +113,10 @@
                             </div>
                         </div>
                     </td>
-                    <td>@item.PresupuestoEstimado.ToString("C2")</td>
+                    <td>@(item.PresupuestoEstimado.HasValue ? item.PresupuestoEstimado.Value.FormatCurrency() : "-")</td>
                     <td style="text-align:right;">
-                        @if (item.Estado != "Finalizado" && item.Estado != "Cancelado")
-                        {
-                            <a href="@Url.Action("Edit", new { id = item.Id })" class="btn btn-outline btn-sm">Editar</a>
-                        }
-                        <form method="post" action="@Url.Action("Eliminar")" style="display:inline;" onsubmit="return confirm('¿Está seguro de eliminar este evento? Esta acción no se puede deshacer.');">
+                        <a href="@Url.Action("Edit", new { id = item.Id })" class="btn btn-outline btn-sm">Editar</a>
+                        <form method="post" action="@Url.Action("Eliminar")" style="display:inline;" onsubmit="return window.EventHubSwal.confirmForm(this, '¿Está seguro de eliminar este evento? Esta acción no se puede deshacer.');">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="id" value="@item.Id" />
                             <button type="submit" class="btn btn-outline btn-sm" style="color:#dc2626;border-color:#dc2626;">Eliminar</button>
@@ -132,6 +127,54 @@
         </tbody>
     </table>
 </div>
+
+<!-- Finished Events Section -->
+@if (finishedEvents.Any())
+{
+    <div style="margin-top:24px;">
+        <button type="button" id="toggleFinished" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:var(--text-muted);padding:8px 0;font-family:inherit;">
+            <svg id="toggleArrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition:transform 0.2s;"><path d="M6 9l6 6 6-6"/></svg>
+            Eventos Finalizados (@finishedEvents.Count)
+        </button>
+        <div id="finishedSection" style="display:none;">
+            <div class="card" style="padding:0;overflow:hidden;margin-top:8px;">
+                <table class="table" id="finishedTable">
+                    <thead>
+                        <tr>
+                            <th class="sortable" data-col="0" data-type="string">Evento</th>
+                            <th class="sortable" data-col="1" data-type="string">Cliente</th>
+                            <th class="sortable" data-col="2" data-type="string">Lugar</th>
+                            <th class="sortable" data-col="3" data-type="date">Fecha</th>
+                            <th class="sortable" data-col="4" data-type="status">Estado</th>
+                            <th class="sortable" data-col="5" data-type="currency">Presupuesto</th>
+                            <th style="text-align:right;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in finishedEvents)
+                        {
+                            <tr class="event-row" data-href="@Url.Action("Details", new { id = item.Id })" style="cursor:pointer;">
+                                <td><a href="@Url.Action("Details", new { id = item.Id })" style="color:var(--primary);text-decoration:none;font-weight:600;">@item.Nombre</a></td>
+                                <td>@item.ClienteNombre</td>
+                                <td>@item.VenueNombre</td>
+                                <td>@item.FechaInicio.ToString("dd/MM/yyyy")</td>
+                                <td><span class="badge badge-@item.Estado.ToLower()">@item.Estado</span></td>
+                                <td>@(item.PresupuestoEstimado.HasValue ? item.PresupuestoEstimado.Value.FormatCurrency() : "-")</td>
+                                <td style="text-align:right;">
+                                    <form method="post" action="@Url.Action("Eliminar")" style="display:inline;" onsubmit="return window.EventHubSwal.confirmForm(this, '¿Está seguro de eliminar este evento?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <button type="submit" class="btn btn-outline btn-sm" style="color:#dc2626;border-color:#dc2626;">Eliminar</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
 
 <style>
     .event-row:hover td {
@@ -182,16 +225,52 @@
         background: var(--primary-light);
         color: var(--primary);
     }
+    th.sortable {
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+        padding-right: 20px !important;
+    }
+    th.sortable:hover {
+        background: var(--primary-light);
+    }
+    th.sortable::after {
+        content: '';
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 10px;
+        color: var(--text-muted);
+    }
+    th.sort-asc::after { content: '▲'; color: var(--primary); }
+    th.sort-desc::after { content: '▼'; color: var(--primary); }
 </style>
 
 @section scripts {
     <script>
+        // Toggle finished events section
+        var toggleBtn = document.getElementById('toggleFinished');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                var section = document.getElementById('finishedSection');
+                var arrow = document.getElementById('toggleArrow');
+                if (section.style.display === 'none') {
+                    section.style.display = 'block';
+                    arrow.style.transform = 'rotate(180deg)';
+                } else {
+                    section.style.display = 'none';
+                    arrow.style.transform = 'rotate(0deg)';
+                }
+            });
+        }
+
+        // Event row click navigation
         document.querySelectorAll('.event-row').forEach(function(row) {
             row.addEventListener('click', function(e) {
                 if (e.target.closest('a, button, form')) return;
                 window.location.href = row.dataset.href;
             });
-            
             row.setAttribute('tabindex', '0');
             row.setAttribute('role', 'button');
             row.addEventListener('keydown', function(e) {
@@ -202,6 +281,7 @@
             });
         });
 
+        // Status dropdown
         document.querySelectorAll('.status-btn').forEach(function(btn) {
             btn.addEventListener('click', function(e) {
                 e.stopPropagation();
@@ -218,5 +298,66 @@
                 m.style.display = 'none';
             });
         });
+
+        // Column sorting
+        (function() {
+            var statusOrder = { 'Planificacion': 0, 'PreProduccion': 1, 'Ejecucion': 2, 'Finalizado': 3, 'Cancelado': 4 };
+            var currentSort = { table: null, col: -1, dir: 'none' };
+
+            function initSorting(tableEl) {
+                tableEl.querySelectorAll('th.sortable').forEach(function(th) {
+                    th.addEventListener('click', function() {
+                        var col = parseInt(th.dataset.col);
+                        var type = th.dataset.type;
+                        var tbody = tableEl.querySelector('tbody');
+                        var rows = Array.from(tbody.querySelectorAll('tr:not(:has(td[colspan]))'));
+
+                        var dir = 'asc';
+                        if (currentSort.table === tableEl && currentSort.col === col && currentSort.dir === 'asc') dir = 'desc';
+                        else if (currentSort.table === tableEl && currentSort.col === col && currentSort.dir === 'desc') dir = 'none';
+
+                        tableEl.querySelectorAll('th.sortable').forEach(function(h) {
+                            h.classList.remove('sort-asc', 'sort-desc');
+                        });
+
+                        if (dir === 'none') {
+                            currentSort = { table: null, col: -1, dir: 'none' };
+                            return;
+                        }
+
+                        th.classList.add(dir === 'asc' ? 'sort-asc' : 'sort-desc');
+                        currentSort = { table: tableEl, col: col, dir: dir };
+
+                        rows.sort(function(a, b) {
+                            var aVal = a.cells[col].textContent.trim();
+                            var bVal = b.cells[col].textContent.trim();
+                            var cmp = 0;
+
+                            if (type === 'date') {
+                                var aParts = aVal.split('/');
+                                var bParts = bVal.split('/');
+                                var aDate = aParts.length === 3 ? new Date(aParts[2], aParts[1] - 1, aParts[0]) : new Date(aVal);
+                                var bDate = bParts.length === 3 ? new Date(bParts[2], bParts[1] - 1, bParts[0]) : new Date(bVal);
+                                cmp = aDate - bDate;
+                            } else if (type === 'currency') {
+                                var aNum = parseFloat(aVal.replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
+                                var bNum = parseFloat(bVal.replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
+                                cmp = aNum - bNum;
+                            } else if (type === 'status') {
+                                cmp = (statusOrder[aVal] || 0) - (statusOrder[bVal] || 0);
+                            } else {
+                                cmp = aVal.localeCompare(bVal, 'es');
+                            }
+
+                            return dir === 'asc' ? cmp : -cmp;
+                        });
+
+                        rows.forEach(function(row) { tbody.appendChild(row); });
+                    });
+                });
+            }
+
+            document.querySelectorAll('table.table').forEach(initSorting);
+        })();
     </script>
 }

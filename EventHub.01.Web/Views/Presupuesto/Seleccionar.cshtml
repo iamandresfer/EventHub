@@ -1,0 +1,59 @@
+@model dynamic
+@using EventHub._01.Web.Helpers
+@{
+    ViewBag.Title = "Presupuesto";
+    ViewBag.HeaderTitle = "Presupuesto";
+    ViewBag.HeaderSubtitle = "Selecciona un evento para ver su presupuesto";
+    ViewBag.BackUrl = Url.Action("Index", "Home");
+    var eventos = ViewBag.Eventos as List<EventHub._02.Bussines.DTOs.EventoListDto> ?? new List<EventHub._02.Bussines.DTOs.EventoListDto>();
+}
+
+<div class="action-bar">
+    <div class="search-box">
+        <input type="text" id="searchEventos" class="form-control" placeholder="Buscar evento..." style="width:240px" />
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
+    @foreach (var e in eventos)
+    {
+        var hasImage = !string.IsNullOrEmpty(e.CoverPhotoUrl);
+        var gradient = hasImage ? "" : "linear-gradient(135deg, #2563eb, #7c3aed)";
+        <div class="evento-select-card" data-search="@e.Nombre @e.ClienteNombre @e.VenueNombre"
+             onclick="window.location='@Url.Action("Index", new { eventoId = e.Id })'"
+             style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; cursor: pointer; transition: box-shadow 0.2s, border-color 0.2s;"
+             onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.08)'; this.style.borderColor='var(--primary)'"
+             onmouseout="this.style.boxShadow='none'; this.style.borderColor='var(--border)'">
+            <div style="height: 100px; @(hasImage ? $"background-image: url('{e.CoverPhotoUrl}'); background-size: cover; background-position: center;" : $"background: {gradient};") position: relative;">
+                <div style="position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.9); padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600;">@e.Estado</div>
+            </div>
+            <div style="padding: 14px;">
+                <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px;">@e.Nombre</div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">@e.ClienteNombre &bull; @e.VenueNombre</div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 12px; color: var(--text-muted);">@e.FechaInicio.ToString("dd/MM/yyyy")</span>
+                    <span style="font-size: 13px; font-weight: 600; color: #10b981;">@(e.PresupuestoEstimado.HasValue ? e.PresupuestoEstimado.Value.FormatCurrency() : "-")</span>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (!eventos.Any())
+{
+    <div style="text-align:center;padding:60px 20px;color:var(--text-muted);">
+        <p>No hay eventos disponibles</p>
+    </div>
+}
+
+@section scripts {
+    <script>
+        document.getElementById('searchEventos').addEventListener('input', function() {
+            var q = this.value.toLowerCase();
+            document.querySelectorAll('.evento-select-card').forEach(function(card) {
+                var text = (card.dataset.search || '').toLowerCase();
+                card.style.display = text.includes(q) ? '' : 'none';
+            });
+        });
+    </script>
+}

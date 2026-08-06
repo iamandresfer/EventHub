@@ -1,0 +1,455 @@
+@model EventHub._02.Bussines.DTOs.GastoFormDto
+@using EventHub._01.Web.Helpers
+@{
+    ViewBag.Title = "Presupuesto";
+    var evento = ViewBag.Evento as EventHub._02.Bussines.DTOs.EventoListDto;
+    var gastos = ViewBag.Gastos as List<EventHub._02.Bussines.DTOs.GastoDto> ?? new List<EventHub._02.Bussines.DTOs.GastoDto>();
+    var resumen = ViewBag.Resumen as Dictionary<string, decimal> ?? new Dictionary<string, decimal>();
+    var ingresos = ViewBag.Ingresos as List<EventHub._02.Bussines.DTOs.IngresoDto> ?? new List<EventHub._02.Bussines.DTOs.IngresoDto>();
+    var resumenIngresos = ViewBag.ResumenIngresos as Dictionary<string, decimal> ?? new Dictionary<string, decimal>();
+    var categorias = new[] { "Sonido", "Iluminación", "Catering", "Logística", "Decoración", "Personal", "Otro" };
+    var coloresCat = new Dictionary<string, string> {
+        { "Sonido", "#3b82f6" }, { "Iluminación", "#8b5cf6" }, { "Catering", "#f59e0b" },
+        { "Logística", "#10b981" }, { "Decoración", "#ec4899" }, { "Personal", "#06b6d4" }, { "Otro", "#6b7280" }
+    };
+    var tiposIngreso = new[] { "Auspicio / Patrocinio", "Venta de entradas / boletos", "Venta de productos / merch", "Donación", "Aporte propio / del cliente" };
+    var coloresIng = new Dictionary<string, string> {
+        { "Auspicio / Patrocinio", "#10b981" }, { "Venta de entradas / boletos", "#3b82f6" },
+        { "Venta de productos / merch", "#f59e0b" }, { "Donación", "#8b5cf6" }, { "Aporte propio / del cliente", "#06b6d4" }
+    };
+    var totalRecaudado = evento.TotalIngresos ?? 0;
+    var totalGastado = evento.GastoReal ?? 0;
+    var balance = totalRecaudado - totalGastado;
+    ViewBag.HeaderTitle = "Presupuesto — " + evento.Nombre;
+    ViewBag.HeaderSubtitle = evento.FechaInicio.ToString("dd/MM/yyyy") + " – " + evento.FechaFin.ToString("dd/MM/yyyy");
+    ViewBag.BackUrl = Url.Action("Details", "Eventos", new { id = evento.Id });
+}
+
+@section headerActions {
+    <div class="section-header__actions">
+        <button onclick="openIngresoModal()" class="btn btn-sm" style="display:flex; align-items:center; gap:6px; background:#10b981; color:white; border:none;">
+            + Nuevo Ingreso
+        </button>
+        <button onclick="openModal()" class="btn btn-primary btn-sm" style="display:flex; align-items:center; gap:6px;">
+            + Nuevo Gasto
+        </button>
+    </div>
+}
+
+<!-- Summary Cards -->
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px;">
+    <div class="card" style="text-align:center;">
+        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Presupuesto Estimado</div>
+        <div style="font-size: 18px; font-weight: 700; @(evento.PresupuestoEstimado.HasValue ? "" : "color: var(--text-muted);")">
+            @(evento.PresupuestoEstimado.HasValue ? evento.PresupuestoEstimado.Value.FormatCurrency() : "Sin definir")
+        </div>
+    </div>
+    <div class="card" style="text-align:center;">
+        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Total Recaudado</div>
+        <div style="font-size: 18px; font-weight: 700; color: #10b981;">@totalRecaudado.FormatCurrency()</div>
+    </div>
+    <div class="card" style="text-align:center;">
+        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Total Gastado</div>
+        <div style="font-size: 18px; font-weight: 700; color: #f59e0b;">@totalGastado.FormatCurrency()</div>
+    </div>
+    <div class="card" style="text-align:center;">
+        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Balance</div>
+        <div style="font-size: 18px; font-weight: 700; color: @(balance >= 0 ? "#10b981" : "#ef4444");">@balance.FormatCurrency()</div>
+    </div>
+</div>
+
+<!-- Charts (Apache ECharts) -->
+<div class="card" style="margin-bottom: 24px; padding: 20px;">
+    <h3 style="margin: 0 0 16px 0; font-size: 14px; font-weight: 600;">Desglose por Categoría</h3>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+        <div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Gastos por Categoría (donut)</div>
+            <div id="gastosDonutChart" style="height:240px;"></div>
+        </div>
+        <div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Gastos por Categoría (barras)</div>
+            <div id="gastosBarChart" style="height:240px;"></div>
+        </div>
+        <div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">Ingresos por Tipo (donut)</div>
+            <div id="ingresosDonutChart" style="height:240px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Incomes List -->
+<div class="card" style="margin-bottom: 24px;">
+    <h3 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600;">Ingresos Registrados (@ingresos.Count)</h3>
+    @if (ingresos.Any())
+    {
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+            @foreach (var ing in ingresos)
+            {
+                var color = coloresIng.ContainsKey(ing.Tipo) ? coloresIng[ing.Tipo] : "#6b7280";
+                <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--bg-secondary); border-radius: 6px; border-left: 3px solid @color;" id="ingreso-@ing.Id">
+                    <div style="width: 36px; height: 36px; border-radius: 8px; background: @color; color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">@(ing.Tipo.Length > 0 ? ing.Tipo.Substring(0,1) : "?")</div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@ing.Concepto</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">@ing.Tipo · @ing.Fecha.ToString("dd/MM/yyyy")@(!string.IsNullOrEmpty(ing.Cliente) ? $" · {ing.Cliente}" : "")</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 14px; font-weight: 700; color: #10b981;">@ing.Monto.FormatCurrency()</div>
+                    </div>
+                    <div style="display: flex; gap: 4px;">
+                        <button onclick="editIngreso(@ing.Id)" style="background:none; border:none; cursor:pointer; color:var(--text-muted); padding:4px;" title="Editar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                        <button onclick="deleteIngreso(@ing.Id)" style="background:none; border:none; cursor:pointer; color:#ef4444; padding:4px;" title="Eliminar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div style="text-align:center; padding: 40px; color: var(--text-muted);">Sin ingresos registrados</div>
+    }
+</div>
+
+<!-- Expenses List -->
+<div class="card">
+    <h3 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600;">Gastos Registrados (@gastos.Count)</h3>
+    @if (gastos.Any())
+    {
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+            @foreach (var g in gastos)
+            {
+                var color = coloresCat.ContainsKey(g.Categoria) ? coloresCat[g.Categoria] : "#6b7280";
+                <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--bg-secondary); border-radius: 6px; border-left: 3px solid @color;" id="gasto-@g.Id">
+                    <div style="width: 36px; height: 36px; border-radius: 8px; background: @color; color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">@(g.Categoria.Length > 0 ? g.Categoria.Substring(0,1) : "?")</div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@g.Concepto</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">@g.Categoria · @g.Fecha.ToString("dd/MM/yyyy")@(!string.IsNullOrEmpty(g.Proveedor) ? $" · {g.Proveedor}" : "")</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 14px; font-weight: 700; color: #f59e0b;">@g.Monto.FormatCurrency()</div>
+                    </div>
+                    <div style="display: flex; gap: 4px;">
+                        <button onclick="editGasto(@g.Id)" style="background:none; border:none; cursor:pointer; color:var(--text-muted); padding:4px;" title="Editar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                        <button onclick="deleteGasto(@g.Id)" style="background:none; border:none; cursor:pointer; color:#ef4444; padding:4px;" title="Eliminar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div style="text-align:center; padding: 40px; color: var(--text-muted);">Sin gastos registrados</div>
+    }
+</div>
+
+<!-- Modal Nuevo/Editar Ingreso -->
+<div id="ingresoModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div class="card" style="width: 480px; max-width: 95vw; max-height: 90vh; overflow-y: auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 id="ingresoModalTitle" style="margin:0; font-size:16px;">Nuevo Ingreso</h3>
+            <button onclick="closeIngresoModal()" style="background:none; border:none; font-size:20px; cursor:pointer;">&times;</button>
+        </div>
+        <form id="ingresoForm" method="post" action="@Url.Action("CrearIngreso", "Presupuesto")">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="EventoId" value="@evento.Id" />
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                <div style="grid-column: span 2;">
+                    <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Concepto *</label>
+                    <input name="Concepto" id="fIngConcepto" required style="width:100%; padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text); font-size:13px;" />
+                </div>
+                <div>
+                    <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Tipo de Ingreso *</label>
+                    <select name="Tipo" id="fIngTipo" required style="width:100%; padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text); font-size:13px;">
+                        @foreach (var tipo in tiposIngreso)
+                        {
+                            <option value="@tipo">@tipo</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Monto *</label>
+                    <input name="Monto" id="fIngMonto" type="number" step="0.01" min="0.01" required style="width:100%; padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text); font-size:13px;" />
+                </div>
+                <div>
+                    <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Fecha</label>
+                    <input name="Fecha" id="fIngFecha" type="date" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text); font-size:13px;" />
+                </div>
+                <div>
+                    <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Cliente / Fuente</label>
+                    <input name="Cliente" id="fIngCliente" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text); font-size:13px;" />
+                </div>
+                <div style="grid-column: span 2;">
+                    <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Notas</label>
+                    <textarea name="Notas" id="fIngNotas" rows="2" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text); font-size:13px;"></textarea>
+                </div>
+            </div>
+            <div style="display:flex; gap:8px; justify-content:flex-end;">
+                <button type="button" onclick="closeIngresoModal()" style="padding:8px 16px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text); cursor:pointer; font-size:13px;">Cancelar</button>
+                <button type="submit" style="padding:8px 16px; background:#10b981; color:white; border:none; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600;">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Nuevo/Editar Gasto -->
+<div id="gastoModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div class="card" style="width: 480px; max-width: 95vw; max-height: 90vh; overflow-y: auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 id="modalTitle" style="margin:0; font-size:16px;">Nuevo Gasto</h3>
+            <button onclick="closeModal()" style="background:none; border:none; font-size:20px; cursor:pointer;">&times;</button>
+        </div>
+        <form id="gastoForm" method="post" action="@Url.Action("Crear", "Presupuesto")">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="EventoId" value="@evento.Id" />
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                <div style="grid-column: span 2;">
+                    <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Concepto *</label>
+                    <input name="Concepto" id="fConcepto" required style="width:100%; padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text); font-size:13px;" />
+                </div>
+                <div>
+                    <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Categoría *</label>
+                    <select name="Categoria" id="fCategoria" required style="width:100%; padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text); font-size:13px;">
+                        @foreach (var cat in categorias)
+                        {
+                            <option value="@cat">@cat</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Monto *</label>
+                    <input name="Monto" id="fMonto" type="number" step="0.01" min="0.01" required style="width:100%; padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text); font-size:13px;" />
+                </div>
+                <div>
+                    <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Fecha</label>
+                    <input name="Fecha" id="fFecha" type="date" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text); font-size:13px;" />
+                </div>
+                <div>
+                    <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Proveedor</label>
+                    <input name="Proveedor" id="fProveedor" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text); font-size:13px;" />
+                </div>
+                <div style="grid-column: span 2;">
+                    <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Notas</label>
+                    <textarea name="Notas" id="fNotas" rows="2" style="width:100%; padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text); font-size:13px;"></textarea>
+                </div>
+            </div>
+            <div style="display:flex; gap:8px; justify-content:flex-end;">
+                <button type="button" onclick="closeModal()" style="padding:8px 16px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text); cursor:pointer; font-size:13px;">Cancelar</button>
+                <button type="submit" style="padding:8px 16px; background:var(--primary); color:white; border:none; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600;">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section scripts {
+<script>
+    var editId = null;
+    var editIngresoId = null;
+    var gastos = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(gastos));
+    var ingresos = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ingresos));
+
+    // ---------- Charts (Apache ECharts) ----------
+    (function () {
+        if (typeof echarts === 'undefined') return;
+
+        function formatMoney(n) {
+            return '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function buildDonut(el, labels, values, colors) {
+            if (!labels.length) {
+                document.getElementById(el).innerHTML = '<div style="text-align:center;padding:70px 0;color:var(--text-muted);font-size:13px;">Sin datos</div>';
+                return null;
+            }
+            var chart = echarts.init(document.getElementById(el));
+            chart.setOption({
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function (p) { return p.name + ': ' + formatMoney(p.value); }
+                },
+                legend: { bottom: 0, icon: 'circle', itemWidth: 10, itemHeight: 10, textStyle: { fontSize: 12, color: '#64748b' } },
+                series: [{
+                    type: 'pie',
+                    radius: ['55%', '78%'],
+                    center: ['50%', '42%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
+                    label: { show: false },
+                    emphasis: { label: { show: false } },
+                    data: labels.map(function (l, i) {
+                        return { value: values[i], name: l, itemStyle: { color: colors[i] } };
+                    })
+                }]
+            });
+            return chart;
+        }
+
+        function buildBar(el, labels, values, colors) {
+            if (!labels.length) {
+                document.getElementById(el).innerHTML = '<div style="text-align:center;padding:70px 0;color:var(--text-muted);font-size:13px;">Sin datos</div>';
+                return null;
+            }
+            var chart = echarts.init(document.getElementById(el));
+            chart.setOption({
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' },
+                    formatter: function (params) {
+                        var p = params[0];
+                        return p.name + ': ' + formatMoney(p.value);
+                    }
+                },
+                grid: { left: 70, right: 16, top: 16, bottom: 60 },
+                xAxis: {
+                    type: 'category',
+                    data: labels,
+                    axisLine: { lineStyle: { color: '#e2e8f0' } },
+                    axisTick: { show: false },
+                    axisLabel: { color: '#64748b', fontSize: 11, rotate: 30 }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: { color: '#64748b', fontSize: 11, formatter: formatMoney },
+                    splitLine: { lineStyle: { color: '#f1f5f9' } }
+                },
+                series: [{
+                    type: 'bar',
+                    barWidth: 28,
+                    itemStyle: { borderRadius: [6, 6, 0, 0] },
+                    data: values.map(function (v, i) { return { value: v, itemStyle: { color: colors[i] } }; })
+                }]
+            });
+            return chart;
+        }
+
+        var catResumen = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(resumen));
+        var catColores = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(coloresCat));
+        var categorias = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(categorias));
+        var ingResumen = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(resumenIngresos));
+        var ingColores = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(coloresIng));
+        var tiposIngreso = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(tiposIngreso));
+
+        var catLabels = [], catValues = [], catColors = [];
+        categorias.forEach(function (c) {
+            var v = catResumen[c] || 0;
+            if (v > 0) { catLabels.push(c); catValues.push(v); catColors.push(catColores[c] || '#6b7280'); }
+        });
+
+        var ingLabels = [], ingValues = [], ingColors = [];
+        tiposIngreso.forEach(function (t) {
+            var v = ingResumen[t] || 0;
+            if (v > 0) { ingLabels.push(t); ingValues.push(v); ingColors.push(ingColores[t] || '#6b7280'); }
+        });
+
+        var donutGastos = buildDonut('gastosDonutChart', catLabels, catValues, catColors);
+        var barGastos = buildBar('gastosBarChart', catLabels, catValues, catColors);
+        var donutIngresos = buildDonut('ingresosDonutChart', ingLabels, ingValues, ingColors);
+
+        window.addEventListener('resize', function () {
+            if (donutGastos) donutGastos.resize();
+            if (barGastos) barGastos.resize();
+            if (donutIngresos) donutIngresos.resize();
+        });
+    })();
+
+    // ---------- Ingresos ----------
+    function openIngresoModal(id) {
+        editIngresoId = id || null;
+        document.getElementById('ingresoModal').style.display = 'flex';
+        document.getElementById('ingresoModalTitle').textContent = editIngresoId ? 'Editar Ingreso' : 'Nuevo Ingreso';
+        document.getElementById('ingresoForm').action = editIngresoId ? '/Presupuesto/EditarIngreso/' + editIngresoId : '@Url.Action("CrearIngreso", "Presupuesto")';
+
+        if (editIngresoId) {
+            var i = ingresos.find(function (x) { return x.Id === editIngresoId; });
+            if (i) {
+                document.getElementById('fIngConcepto').value = i.Concepto;
+                document.getElementById('fIngTipo').value = i.Tipo;
+                document.getElementById('fIngMonto').value = i.Monto;
+                document.getElementById('fIngFecha').value = i.Fecha ? i.Fecha.substring(0, 10) : '';
+                document.getElementById('fIngCliente').value = i.Cliente || '';
+                document.getElementById('fIngNotas').value = i.Notas || '';
+            }
+        } else {
+            document.getElementById('ingresoForm').reset();
+            document.getElementById('fIngFecha').value = new Date().toISOString().substring(0, 10);
+        }
+    }
+
+    function closeIngresoModal() {
+        document.getElementById('ingresoModal').style.display = 'none';
+        editIngresoId = null;
+    }
+
+    function editIngreso(id) {
+        openIngresoModal(id);
+    }
+
+    function deleteIngreso(id) {
+        window.EventHubSwal.confirm('¿Eliminar este ingreso?', function () {
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '@Url.Action("EliminarIngreso", "Presupuesto")';
+            form.innerHTML = '@Html.AntiForgeryToken() <input name="id" value="' + id + '" /><input name="eventoId" value="@evento.Id" />';
+            document.body.appendChild(form);
+            form.submit();
+        });
+    }
+
+    // ---------- Gastos ----------
+    function openModal(id) {
+        editId = id || null;
+        document.getElementById('gastoModal').style.display = 'flex';
+        document.getElementById('modalTitle').textContent = editId ? 'Editar Gasto' : 'Nuevo Gasto';
+        document.getElementById('gastoForm').action = editId ? '/Presupuesto/Editar/' + editId : '@Url.Action("Crear", "Presupuesto")';
+
+        if (editId) {
+            var g = gastos.find(function (x) { return x.Id === editId; });
+            if (g) {
+                document.getElementById('fConcepto').value = g.Concepto;
+                document.getElementById('fCategoria').value = g.Categoria;
+                document.getElementById('fMonto').value = g.Monto;
+                document.getElementById('fFecha').value = g.Fecha ? g.Fecha.substring(0, 10) : '';
+                document.getElementById('fProveedor').value = g.Proveedor || '';
+                document.getElementById('fNotas').value = g.Notas || '';
+            }
+        } else {
+            document.getElementById('gastoForm').reset();
+            document.getElementById('fFecha').value = new Date().toISOString().substring(0, 10);
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('gastoModal').style.display = 'none';
+        editId = null;
+    }
+
+    function editGasto(id) {
+        openModal(id);
+    }
+
+    function deleteGasto(id) {
+        window.EventHubSwal.confirm('¿Eliminar este gasto?', function () {
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '@Url.Action("Eliminar", "Presupuesto")';
+            form.innerHTML = '@Html.AntiForgeryToken() <input name="id" value="' + id + '" /><input name="eventoId" value="@evento.Id" />';
+            document.body.appendChild(form);
+            form.submit();
+        });
+    }
+
+    document.getElementById('ingresoForm').addEventListener('submit', function (e) {
+        if (!document.getElementById('fIngConcepto').value.trim() || !document.getElementById('fIngMonto').value) {
+            e.preventDefault();
+            window.EventHubSwal.error('Complete los campos obligatorios.');
+        }
+    });
+
+    document.getElementById('gastoForm').addEventListener('submit', function (e) {
+        if (!document.getElementById('fConcepto').value.trim() || !document.getElementById('fMonto').value) {
+            e.preventDefault();
+            window.EventHubSwal.error('Complete los campos obligatorios.');
+        }
+    });
+    </script>
+}

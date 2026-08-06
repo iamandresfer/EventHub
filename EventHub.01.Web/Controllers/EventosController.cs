@@ -56,6 +56,19 @@ namespace EventHub._01.Web.Controllers
         {
             var evento = await _eventoService.GetByIdAsync(id);
             if (evento == null) return HttpNotFound();
+
+            var context = new EventHubContext();
+
+            var tareas = context.Tareas.Where(t => t.EventoId == id).ToList();
+            ViewBag.TareasTotales = tareas.Count;
+            ViewBag.TareasCompletadas = tareas.Count(t => t.Estado == "Completado");
+            ViewBag.TareasPendientes = tareas.Count(t => t.Estado != "Completado");
+
+            var operadorService = new OperadorService();
+            var crew = operadorService.GetPorEvento(id);
+            ViewBag.CrewCount = crew.Count;
+            ViewBag.CrewList = crew.Take(6).ToList();
+
             return View(evento);
         }
 
@@ -85,11 +98,31 @@ namespace EventHub._01.Web.Controllers
                 return View(model);
             }
 
-            var userId = GetUserId();
-            var result = await _eventoService.CreateAsync(model, userId);
+            try
+            {
+                var userId = GetUserId();
+                var result = await _eventoService.CreateAsync(model, userId);
 
-            TempData["SuccessMessage"] = "Evento creado exitosamente.";
-            return RedirectToAction("Index");
+                TempData["SuccessMessage"] = "Evento creado exitosamente.";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Create Evento] Error: {ex}");
+                TempData["ErrorMessage"] = "Error al crear el evento: " + GetDeepestMessage(ex);
+                ViewBag.Clientes = new SelectList(await _clienteService.GetActiveAsync(), "Id", "Nombre", model.ClienteId);
+                ViewBag.Venues = new SelectList(await _venueService.GetAvailableAsync(), "Id", "Nombre", model.VenueId);
+                ViewBag.TiposEvento = new SelectList(await _tipoEventoService.GetAllAsync(), "Id", "Nombre", model.TipoEventoId);
+                return View(model);
+            }
+        }
+
+        private static string GetDeepestMessage(Exception ex)
+        {
+            var current = ex;
+            while (current.InnerException != null)
+                current = current.InnerException;
+            return current.Message;
         }
 
         public async Task<ActionResult> Edit(int id)
@@ -101,17 +134,21 @@ namespace EventHub._01.Web.Controllers
             {
                 Id = evento.Id,
                 Nombre = evento.Nombre,
-                ClienteId = 0,
-                VenueId = 0,
-                TipoEventoId = 0,
+                ClienteId = evento.ClienteId,
+                VenueId = evento.VenueId,
+                TipoEventoId = evento.TipoEventoId,
                 FechaInicio = evento.FechaInicio,
                 FechaFin = evento.FechaFin,
-                PresupuestoEstimado = evento.PresupuestoEstimado
+                HoraInicio = evento.HoraInicio,
+                HoraFin = evento.HoraFin,
+                PresupuestoEstimado = evento.PresupuestoEstimado,
+                Descripcion = evento.Descripcion,
+                CoverPhotoUrl = evento.CoverPhotoUrl
             };
 
-            ViewBag.Clientes = new SelectList(await _clienteService.GetActiveAsync(), "Id", "Nombre");
-            ViewBag.Venues = new SelectList(await _venueService.GetAvailableAsync(), "Id", "Nombre");
-            ViewBag.TiposEvento = new SelectList(await _tipoEventoService.GetAllAsync(), "Id", "Nombre");
+            ViewBag.Clientes = new SelectList(await _clienteService.GetActiveAsync(), "Id", "Nombre", evento.ClienteId);
+            ViewBag.Venues = new SelectList(await _venueService.GetAvailableAsync(), "Id", "Nombre", evento.VenueId);
+            ViewBag.TiposEvento = new SelectList(await _tipoEventoService.GetAllAsync(), "Id", "Nombre", evento.TipoEventoId);
             return View(model);
         }
 
@@ -125,6 +162,19 @@ namespace EventHub._01.Web.Controllers
                 ViewBag.Venues = new SelectList(await _venueService.GetAvailableAsync(), "Id", "Nombre", model.VenueId);
                 ViewBag.TiposEvento = new SelectList(await _tipoEventoService.GetAllAsync(), "Id", "Nombre", model.TipoEventoId);
                 return View(model);
+            }
+
+            if (Request.Files.Count > 0 && Request.Files[0] != null && Request.Files[0].ContentLength > 0)
+            {
+                var file = Request.Files[0];
+                var uploadsDir = Server.MapPath("~/Content/uploads/eventos/");
+                if (!Directory.Exists(uploadsDir))
+                    Directory.CreateDirectory(uploadsDir);
+
+                var fileName = Guid.NewGuid().ToString("N") + Path.GetExtension(file.FileName);
+                var filePath = Path.Combine(uploadsDir, fileName);
+                file.SaveAs(filePath);
+                model.CoverPhotoUrl = "/Content/uploads/eventos/" + fileName;
             }
 
             var result = await _eventoService.UpdateAsync(id, model);
@@ -192,19 +242,19 @@ namespace EventHub._01.Web.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult UploadCover(HttpPostedFileBase file)
         {
-            if (file == null || file.ContentLength == 0)
-                return Json(new { success = false, message = "No se proporcionó archivo." });
-
-            var ext = Path.GetExtension(file.FileName).ToLower();
-            var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-            if (Array.IndexOf(allowed, ext) < 0)
-                return Json(new { success = false, message = "Formato no válido." });
-
-            if (file.ContentLength > 5 * 1024 * 1024)
-                return Json(new { success = false, message = "La imagen no puede superar 5MB." });
-
             try
             {
+                if (file == null || file.ContentLength == 0)
+                    return Json(new { success = false, message = "No se proporcionó archivo." });
+
+                var ext = Path.GetExtension(file.FileName).ToLower();
+                var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+                if (Array.IndexOf(allowed, ext) < 0)
+                    return Json(new { success = false, message = "Formato no válido. Use JPG, PNG o WebP." });
+
+                if (file.ContentLength > 5 * 1024 * 1024)
+                    return Json(new { success = false, message = "La imagen no puede superar 5MB." });
+
                 var uploadDir = Server.MapPath("~/Content/uploads/eventos");
                 if (!Directory.Exists(uploadDir))
                     Directory.CreateDirectory(uploadDir);
@@ -218,20 +268,28 @@ namespace EventHub._01.Web.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error al guardar: " + ex.Message });
+                System.Diagnostics.Debug.WriteLine($"[UploadCover] Error: {ex}");
+                return Json(new { success = false, message = "Error al guardar la imagen: " + ex.Message });
             }
         }
 
         private int GetUserId()
         {
-            var data = System.Web.Security.FormsAuthentication.Decrypt(
-                Request.Cookies[System.Web.Security.FormsAuthentication.FormsCookieName]?.Value ?? "")?.UserData;
-            if (!string.IsNullOrEmpty(data))
+            try
             {
-                var parts = data.Split('|');
+                var cookie = Request.Cookies[System.Web.Security.FormsAuthentication.FormsCookieName];
+                if (cookie == null || string.IsNullOrEmpty(cookie.Value))
+                    return 0;
+
+                var ticket = System.Web.Security.FormsAuthentication.Decrypt(cookie.Value);
+                if (ticket == null || string.IsNullOrEmpty(ticket.UserData))
+                    return 0;
+
+                var parts = ticket.UserData.Split('|');
                 if (parts.Length > 0 && int.TryParse(parts[0], out var id))
                     return id;
             }
+            catch { }
             return 0;
         }
 
@@ -249,10 +307,9 @@ namespace EventHub._01.Web.Controllers
             var usuarios = context.Usuarios.Where(u => u.Estado).Select(u => new { u.Id, u.Nombre }).ToList();
             ViewBag.Usuarios = new SelectList(usuarios, "Id", "Nombre");
 
-            // Cargar crew del evento
-            var crewService = new CrewService();
-            var crew = crewService.ObtenerCrewPorEvento(id);
-            ViewBag.Crew = new SelectList(crew.Where(c => c.Estado), "Id", "Nombre");
+            var operadorService = new OperadorService();
+            var operadores = operadorService.GetActivos();
+            ViewBag.Crew = new SelectList(operadores, "Id", "Nombre");
 
             var tareaService = new TareaService();
             var tareas = tareaService.ObtenerTareasPorEvento(id);
@@ -271,22 +328,21 @@ namespace EventHub._01.Web.Controllers
                 var tareaService = new TareaService();
                 var result = tareaService.CrearTarea(model);
 
-                // Enviar notificación si hay un crew operador asignado
-                if (result.CrewOperadorId.HasValue && !string.IsNullOrEmpty(result.CrewOperadorEmail))
+                if (result.OperadorId.HasValue && !string.IsNullOrEmpty(result.OperadorEmail))
                 {
                     var context = new EventHubContext();
                     var evento = context.Eventos.Find(model.EventoId);
                     var eventoNombre = evento?.Nombre ?? "Evento";
 
-                    var mensaje = $"Se te asignó la tarea \"{result.Titulo}\" en el evento \"{eventoNombre}\".";
+                    var mensaje = $"Se te asigno la tarea \"{result.Titulo}\" en el evento \"{eventoNombre}\".";
                     if (result.FechaLimite.HasValue)
-                        mensaje += $" Fecha límite: {result.FechaLimite.Value.ToString("dd/MM/yyyy")}.";
+                        mensaje += $" Fecha limite: {result.FechaLimite.Value.ToString("dd/MM/yyyy")}.";
 
                     _notificacionService.CrearYEnviar(
                         "TareaCreada",
                         mensaje,
-                        result.CrewOperadorEmail,
-                        result.CrewOperadorNombre,
+                        result.OperadorEmail,
+                        result.OperadorNombre,
                         model.EventoId,
                         result.Id,
                         _emailService,
@@ -320,25 +376,24 @@ namespace EventHub._01.Web.Controllers
                 tarea.Descripcion = model.Descripcion;
                 tarea.FechaLimite = model.FechaLimite;
                 tarea.AsignadoAId = model.AsignadoAId;
-                tarea.CrewOperadorId = model.CrewOperadorId;
+                tarea.OperadorId = model.OperadorId;
                 
                 context.SaveChanges();
 
                 var tareaService = new TareaService();
                 var updated = tareaService.ObtenerPorId(model.Id);
 
-                // Notificar si cambió la fecha límite
-                if (fechaAnterior != model.FechaLimite && updated.CrewOperadorId.HasValue && !string.IsNullOrEmpty(updated.CrewOperadorEmail))
+                if (updated.OperadorId.HasValue && !string.IsNullOrEmpty(updated.OperadorEmail))
                 {
                     var evento = context.Eventos.Find(model.EventoId);
                     var eventoNombre = evento?.Nombre ?? "Evento";
-                    var fechaStr = model.FechaLimite.HasValue ? model.FechaLimite.Value.ToString("dd/MM/yyyy") : "sin fecha límite";
+                    var fechaStr = model.FechaLimite.HasValue ? model.FechaLimite.Value.ToString("dd/MM/yyyy") : "sin fecha limite";
 
                     _notificacionService.CrearYEnviar(
                         "FechaModificada",
-                        $"Se modificó la fecha límite de la tarea \"{updated.Titulo}\" en el evento \"{eventoNombre}\". Nueva fecha: {fechaStr}.",
-                        updated.CrewOperadorEmail,
-                        updated.CrewOperadorNombre,
+                        $"Se modifico la tarea \"{updated.Titulo}\" en el evento \"{eventoNombre}\". Fecha limite: {fechaStr}.",
+                        updated.OperadorEmail,
+                        updated.OperadorNombre,
                         model.EventoId,
                         model.Id,
                         _emailService,
@@ -363,31 +418,26 @@ namespace EventHub._01.Web.Controllers
                 var tareaService = new TareaService();
                 var result = tareaService.ActualizarEstado(tareaId, nuevoEstado, nuevoOrden);
 
-                // Notificar al productor si la tarea fue completada
                 if (nuevoEstado == "Completado")
                 {
                     var tarea = tareaService.ObtenerPorId(tareaId);
-                    if (tarea != null)
+                    if (tarea != null && tarea.OperadorId.HasValue && !string.IsNullOrEmpty(tarea.OperadorEmail))
                     {
                         var context = new EventHubContext();
                         var evento = context.Eventos.Find(tarea.EventoId);
                         var eventoNombre = evento?.Nombre ?? "Evento";
-                        var productor = context.Usuarios.Find(evento?.ProductorGeneralId ?? 0);
 
-                        if (productor != null)
-                        {
-                            _notificacionService.CrearYEnviar(
-                                "TareaCompletada",
-                                $"La tarea \"{tarea.Titulo}\" del evento \"{eventoNombre}\" ha sido completada.",
-                                productor.Email,
-                                productor.Nombre,
-                                tarea.EventoId,
-                                tareaId,
-                                _emailService,
-                                eventoNombre,
-                                tarea.Titulo
-                            );
-                        }
+                        _notificacionService.CrearYEnviar(
+                            "TareaCompletada",
+                            $"La tarea \"{tarea.Titulo}\" del evento \"{eventoNombre}\" ha sido completada.",
+                            tarea.OperadorEmail,
+                            tarea.OperadorNombre,
+                            tarea.EventoId,
+                            tareaId,
+                            _emailService,
+                            eventoNombre,
+                            tarea.Titulo
+                        );
                     }
                 }
 

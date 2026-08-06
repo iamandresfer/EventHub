@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using EventHub._02.Bussines.DTOs;
@@ -19,20 +20,15 @@ namespace EventHub._01.Web.Controllers
             _eventoService = new EventoService(context);
         }
 
-        public async Task<ActionResult> Index(string search)
+        public async Task<ActionResult> Index(string search, int page = 1)
         {
-            var clientes = await _clienteService.GetAllAsync();
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                var s = search.ToLower();
-                clientes = clientes.FindAll(c =>
-                    c.Nombre.ToLower().Contains(s) ||
-                    c.Ruc.Contains(s) ||
-                    c.Email.ToLower().Contains(s));
-            }
+            int pageSize = 20;
+            var (clientes, total) = await _clienteService.GetPagedAsync(page, pageSize, search);
 
             ViewBag.Search = search;
+            ViewBag.Page = page;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)total / pageSize);
+            ViewBag.TotalItems = total;
             return View(clientes);
         }
 
@@ -163,14 +159,21 @@ namespace EventHub._01.Web.Controllers
 
         private int GetUserId()
         {
-            var data = System.Web.Security.FormsAuthentication.Decrypt(
-                Request.Cookies[System.Web.Security.FormsAuthentication.FormsCookieName]?.Value ?? "")?.UserData;
-            if (!string.IsNullOrEmpty(data))
+            try
             {
-                var parts = data.Split('|');
+                var cookie = Request.Cookies[System.Web.Security.FormsAuthentication.FormsCookieName];
+                if (cookie == null || string.IsNullOrEmpty(cookie.Value))
+                    return 0;
+
+                var ticket = System.Web.Security.FormsAuthentication.Decrypt(cookie.Value);
+                if (ticket == null || string.IsNullOrEmpty(ticket.UserData))
+                    return 0;
+
+                var parts = ticket.UserData.Split('|');
                 if (parts.Length > 0 && int.TryParse(parts[0], out var id))
                     return id;
             }
+            catch { }
             return 0;
         }
     }

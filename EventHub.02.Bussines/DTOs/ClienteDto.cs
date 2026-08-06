@@ -11,10 +11,10 @@ namespace EventHub._02.Bussines.DTOs
         [Display(Name = "Nombre")]
         public string Nombre { get; set; }
 
-        [Required(ErrorMessage = "El RUC es obligatorio.")]
-        [StringLength(13, MinimumLength = 13, ErrorMessage = "El RUC debe tener 13 dígitos.")]
-        [RegularExpression(@"^\d{13}$", ErrorMessage = "El RUC debe contener solo 13 dígitos.")]
-        [Display(Name = "RUC")]
+        [Required(ErrorMessage = "El RUC/Cédula es obligatorio.")]
+        [StringLength(13, MinimumLength = 10, ErrorMessage = "El RUC/Cédula debe tener entre 10 y 13 dígitos.")]
+        [RegularExpression(@"^\d{10,13}$", ErrorMessage = "El RUC/Cédula debe contener solo dígitos (10 para cédula, 13 para RUC).")]
+        [Display(Name = "RUC / Cédula")]
         public string Ruc { get; set; }
 
         [Required(ErrorMessage = "El email es obligatorio.")]

@@ -18,9 +18,11 @@ namespace EventHub._03.Data
         public DbSet<Venue> Venues { get; set; }
         public DbSet<TipoEvento> TiposEvento { get; set; }
         public DbSet<Tarea> Tareas { get; set; }
-        public DbSet<CrewOperador> CrewOperadores { get; set; }
+        public DbSet<Operador> Operadores { get; set; }
         public DbSet<Notificacion> Notificaciones { get; set; }
         public DbSet<TareaAdjunto> TareaAdjuntos { get; set; }
+        public DbSet<Gasto> Gastos { get; set; }
+        public DbSet<Ingreso> Ingresos { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
