@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using System.Web.Mvc;
 using EventHub._02.Bussines.DTOs;
 using EventHub._02.Bussines.Services;
@@ -112,6 +113,39 @@ namespace EventHub._01.Web.Controllers
             catch (Exception ex)
             {
                 return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public ActionResult UploadFotoAjax(HttpPostedFileBase file)
+        {
+            try
+            {
+                if (file == null || file.ContentLength == 0)
+                    return Json(new { success = false, message = "No se proporcionó archivo." });
+
+                var ext = System.IO.Path.GetExtension(file.FileName).ToLower();
+                var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+                if (Array.IndexOf(allowed, ext) < 0)
+                    return Json(new { success = false, message = "Formato no válido. Use JPG, PNG o WebP." });
+
+                if (file.ContentLength > 2 * 1024 * 1024)
+                    return Json(new { success = false, message = "La imagen no puede superar 2MB." });
+
+                var uploadDir = Server.MapPath("~/Content/uploads/operadores");
+                if (!System.IO.Directory.Exists(uploadDir))
+                    System.IO.Directory.CreateDirectory(uploadDir);
+
+                var fileName = $"ope_{DateTime.Now:yyyyMMddHHmmss}_{Guid.NewGuid():N}{ext}";
+                var filePath = System.IO.Path.Combine(uploadDir, fileName);
+                file.SaveAs(filePath);
+
+                var url = Url.Content("~/Content/uploads/operadores/" + fileName);
+                return Json(new { success = true, url = url });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error al guardar la imagen: " + ex.Message });
             }
         }
 

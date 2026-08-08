@@ -56,11 +56,12 @@ namespace EventHub._02.Bussines.DTOs
         public string Rol { get; set; }
         public bool Estado { get; set; }
         public DateTime FechaCreacion { get; set; }
+        public string FotoUrl { get; set; }
         public List<OperadorEventoDto> Eventos { get; set; } = new List<OperadorEventoDto>();
     }
 
     /// <summary>
-    /// Relacion operador → evento (ope_eve_id en tbl_operadores).
+    /// Relacion operador → evento (ope_eve_id en tbl_crew_operadores).
     /// </summary>
     public class OperadorEventoDto
     {

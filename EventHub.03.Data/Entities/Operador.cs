@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EventHub._03.Data.Entities
 {
-    [Table("tbl_operadores")]
+    [Table("tbl_crew_operadores")]
     public class Operador
     {
         [Key]

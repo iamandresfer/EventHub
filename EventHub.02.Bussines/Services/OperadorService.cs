@@ -120,8 +120,28 @@ namespace EventHub._02.Bussines.Services
 
         public List<OperadorConEventosDto> GetConEventos()
         {
-            return _context.Operadores
+            // EF6 no traduce listas dentro del query: primero se proyecta una forma
+            // plana a SQL y luego se materializa la lista Eventos en memoria.
+            var plano = _context.Operadores
                 .OrderBy(o => o.Nombre)
+                .Select(o => new
+                {
+                    o.Id,
+                    o.Nombre,
+                    o.Cedula,
+                    o.Email,
+                    o.Telefono,
+                    o.Rol,
+                    o.Estado,
+                    o.FechaCreacion,
+                    o.FotoUrl,
+                    EventoId = o.EventoId,
+                    EventoNombre = o.Evento != null ? o.Evento.Nombre : null,
+                    EventoCodigo = o.Evento != null ? o.Evento.Codigo : null
+                })
+                .ToList();
+
+            return plano
                 .Select(o => new OperadorConEventosDto
                 {
                     Id = o.Id,
@@ -132,17 +152,20 @@ namespace EventHub._02.Bussines.Services
                     Rol = o.Rol,
                     Estado = o.Estado,
                     FechaCreacion = o.FechaCreacion,
-                    Eventos = o.EventoId.HasValue ? new List<OperadorEventoDto>
-                    {
-                        new OperadorEventoDto
+                    FotoUrl = o.FotoUrl,
+                    Eventos = o.EventoId.HasValue
+                        ? new List<OperadorEventoDto>
                         {
-                            EventoId = o.Evento.Id,
-                            EventoNombre = o.Evento.Nombre,
-                            EventoCodigo = o.Evento.Codigo,
-                            Estado = o.Estado,
-                            Rol = o.Rol
+                            new OperadorEventoDto
+                            {
+                                EventoId = o.EventoId.Value,
+                                EventoNombre = o.EventoNombre,
+                                EventoCodigo = o.EventoCodigo,
+                                Estado = o.Estado,
+                                Rol = o.Rol
+                            }
                         }
-                    } : new List<OperadorEventoDto>()
+                        : new List<OperadorEventoDto>()
                 })
                 .ToList();
         }

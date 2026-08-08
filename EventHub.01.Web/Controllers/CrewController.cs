@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using EventHub._02.Bussines.DTOs;
@@ -17,24 +18,36 @@ namespace EventHub._01.Web.Controllers
             _operadorService = new OperadorService();
         }
 
-        public ActionResult Index(int eventoId)
-        {
-            var context = new EventHubContext();
-            var evento = context.Eventos.Find(eventoId);
-            if (evento == null) return HttpNotFound();
-
-            ViewBag.EventoId = eventoId;
-            ViewBag.EventoNombre = evento.Nombre;
-
-            var operadores = _operadorService.GetPorEvento(eventoId);
-            return View(operadores);
-        }
-
         [HttpGet]
-        public ActionResult Index()
+        public ActionResult Index(int? eventoId = null, string search = null)
         {
-            var operadores = _operadorService.GetActivos();
-            return View("IndexGlobal", operadores);
+            if (eventoId.HasValue)
+            {
+                var context = new EventHubContext();
+                var evento = context.Eventos.Find(eventoId.Value);
+                if (evento == null) return HttpNotFound();
+
+                ViewBag.EventoId = eventoId.Value;
+                ViewBag.EventoNombre = evento.Nombre;
+
+                var operadores = _operadorService.GetPorEvento(eventoId.Value);
+                return View(operadores);
+            }
+
+            var todos = _operadorService.GetConEventos();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                var s = search.ToLower();
+                todos = todos.FindAll(o =>
+                    o.Nombre.ToLower().Contains(s) ||
+                    (!string.IsNullOrEmpty(o.Email) && o.Email.ToLower().Contains(s)) ||
+                    (!string.IsNullOrEmpty(o.Cedula) && o.Cedula.Contains(s)) ||
+                    (!string.IsNullOrEmpty(o.Rol) && o.Rol.ToLower().Contains(s)));
+            }
+
+            ViewBag.Search = search;
+            return View("~/Views/Operadores/Index.cshtml", todos);
         }
 
         [HttpPost]

@@ -33,6 +33,7 @@
     <table style="width:100%; border-collapse:collapse;">
         <thead>
             <tr style="border-bottom:1px solid var(--border); text-align:left;">
+                <th style="padding:12px 16px; font-size:12px; font-weight:600; color:var(--text-muted);">Foto</th>
                 <th style="padding:12px 16px; font-size:12px; font-weight:600; color:var(--text-muted);">Nombre</th>
                 <th style="padding:12px 16px; font-size:12px; font-weight:600; color:var(--text-muted);">Cédula</th>
                 <th style="padding:12px 16px; font-size:12px; font-weight:600; color:var(--text-muted);">Email</th>
@@ -49,6 +50,16 @@
                 {
                     var evento = o.Eventos != null ? o.Eventos.FirstOrDefault() : null;
                     <tr style="border-bottom:1px solid var(--border);">
+                        <td style="padding:12px 16px;">
+                            @if (!string.IsNullOrEmpty(o.FotoUrl))
+                            {
+                                <img src="@o.FotoUrl" alt="" style="width:40px; height:40px; border-radius:50%; object-fit:cover; background:#f1f5f9; border:1px solid var(--border);" />
+                            }
+                            else
+                            {
+                                <span style="display:inline-block; width:40px; height:40px; border-radius:50%; background:#e2e8f0; color:var(--text-muted); line-height:40px; text-align:center; font-size:13px; font-weight:600;">@o.Nombre.Substring(0, 1).ToUpper()</span>
+                            }
+                        </td>
                         <td style="padding:12px 16px; font-size:13px; font-weight:500;">@o.Nombre</td>
                         <td style="padding:12px 16px; font-size:13px; color:var(--text-muted);">@(o.Cedula ?? "-")</td>
                         <td style="padding:12px 16px; font-size:13px;">@o.Email</td>
@@ -70,7 +81,7 @@
                         </td>
                         <td style="padding:12px 16px;">
                             <div style="display:flex; gap:6px;">
-                                <button class="btn btn-outline btn-sm" onclick='openOperadorModal({ id: @o.Id, nombre: "@(o.Nombre?.Replace("\"", "'"))", cedula: "@(o.Cedula ?? "")", email: "@(o.Email ?? "")", telefono: "@(o.Telefono ?? "")", rol: "@(o.Rol ?? "")" })'>Editar</button>
+                                <button class="btn btn-outline btn-sm" onclick='openOperadorModal({ id: @o.Id, nombre: "@(o.Nombre?.Replace("\"", "'"))", cedula: "@(o.Cedula ?? "")", email: "@(o.Email ?? "")", telefono: "@(o.Telefono ?? "")", rol: "@(o.Rol ?? "")", fotoUrl: "@(o.FotoUrl ?? "")" })'>Editar</button>
                                 @if (evento != null)
                                 {
                                     <button class="btn btn-outline btn-sm" onclick="removerDeEvento(@o.Id, '@o.Nombre')">Quitar de evento</button>
@@ -85,7 +96,7 @@
             else
             {
                 <tr>
-                    <td colspan="7" style="padding:32px; text-align:center; color:var(--text-muted); font-size:13px;">No hay operadores registrados</td>
+                    <td colspan="8" style="padding:32px; text-align:center; color:var(--text-muted); font-size:13px;">No hay operadores registrados</td>
                 </tr>
             }
         </tbody>
@@ -124,6 +135,17 @@
                 <label style="font-size:13px; font-weight:600;">Rol</label>
                 <input type="text" name="Rol" id="opeRol" class="form-control" maxlength="100" placeholder="Ej: Técnico, DJ, Coordinador" />
             </div>
+            <div class="form-group">
+                <label style="font-size:13px; font-weight:600;">Foto</label>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <img id="opeFotoPreview" src="" alt="" style="width:56px; height:56px; border-radius:50%; object-fit:cover; background:#f1f5f9; border:1px solid var(--border); display:none;" />
+                    <div style="flex:1;">
+                        <input type="file" id="opeFotoFile" accept=".jpg,.jpeg,.png,.webp" class="form-control" style="padding:6px;" />
+                        <input type="hidden" name="FotoUrl" id="opeFotoUrl" value="" />
+                        <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">JPG, PNG o WebP · máx 2MB</div>
+                    </div>
+                </div>
+            </div>
             <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:20px;">
                 <button type="button" class="btn btn-outline" onclick="closeOperadorModal()">Cancelar</button>
                 <button type="submit" class="btn btn-primary" id="operadorSubmitBtn">Crear Operador</button>
@@ -142,6 +164,9 @@
             document.getElementById('operadorModalTitle').textContent = 'Nuevo Operador';
             document.getElementById('operadorSubmitBtn').textContent = 'Crear Operador';
             document.getElementById('opeId').value = '0';
+            document.getElementById('opeFotoUrl').value = '';
+            document.getElementById('opeFotoPreview').src = '';
+            document.getElementById('opeFotoPreview').style.display = 'none';
             if (o) {
                 document.getElementById('operadorModalTitle').textContent = 'Editar Operador';
                 document.getElementById('operadorSubmitBtn').textContent = 'Guardar Cambios';
@@ -151,6 +176,11 @@
                 document.getElementById('opeEmail').value = o.email;
                 document.getElementById('opeTelefono').value = o.telefono;
                 document.getElementById('opeRol').value = o.rol;
+                if (o.fotoUrl) {
+                    document.getElementById('opeFotoUrl').value = o.fotoUrl;
+                    document.getElementById('opeFotoPreview').src = o.fotoUrl;
+                    document.getElementById('opeFotoPreview').style.display = 'block';
+                }
             }
             operadorModal.style.display = 'flex';
         }
@@ -158,6 +188,28 @@
         function closeOperadorModal() {
             operadorModal.style.display = 'none';
         }
+
+        document.getElementById('opeFotoFile').addEventListener('change', function() {
+            var file = this.files[0];
+            if (!file) return;
+            var fd = new FormData();
+            fd.append('file', file);
+            fetch('@Url.Action("UploadFotoAjax", "Operadores")', { method: 'POST', body: fd })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        document.getElementById('opeFotoUrl').value = data.url;
+                        document.getElementById('opeFotoPreview').src = data.url;
+                        document.getElementById('opeFotoPreview').style.display = 'block';
+                    } else {
+                        window.EventHubSwal.error('Error: ' + (data.message || 'No se pudo subir la foto.'));
+                        document.getElementById('opeFotoFile').value = '';
+                    }
+                })
+                .catch(function() {
+                    window.EventHubSwal.error('Error de conexión al subir la foto.');
+                });
+        });
 
         operadorForm.addEventListener('submit', function(e) {
             e.preventDefault();
