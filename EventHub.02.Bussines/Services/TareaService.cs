@@ -42,7 +42,7 @@ namespace EventHub._02.Bussines.Services
                 .ToList();
         }
 
-        public TareaDto CrearTarea(TareaFormDto dto)
+        public TareaDto CrearTarea(TareaFormDto dto, int creadoPorId = 0)
         {
             var maxOrden = _context.Tareas
                 .Where(t => t.EventoId == dto.EventoId && t.Estado == dto.Estado)
@@ -59,6 +59,7 @@ namespace EventHub._02.Bussines.Services
                 FechaLimite = dto.FechaLimite,
                 AsignadoAId = dto.AsignadoAId,
                 OperadorId = dto.OperadorId,
+                CreadoPorId = creadoPorId > 0 ? creadoPorId : (int?)null,
                 Orden = maxOrden + 1
             };
 
@@ -85,7 +86,48 @@ namespace EventHub._02.Bussines.Services
                 OperadorId = nuevaTarea.OperadorId,
                 OperadorNombre = nuevaTarea.Operador?.Nombre,
                 OperadorEmail = nuevaTarea.Operador?.Email,
+                CreadoPorId = nuevaTarea.CreadoPorId,
                 Orden = nuevaTarea.Orden
+            };
+        }
+
+        public TareaDto ActualizarTarea(TareaFormDto dto)
+        {
+            var tarea = _context.Tareas.Find(dto.Id);
+            if (tarea == null) return null;
+
+            tarea.Titulo = dto.Titulo;
+            tarea.Descripcion = dto.Descripcion;
+            tarea.Estado = dto.Estado;
+            tarea.Categoria = dto.Categoria;
+            tarea.FechaLimite = dto.FechaLimite;
+            tarea.AsignadoAId = dto.AsignadoAId;
+            tarea.OperadorId = dto.OperadorId;
+
+            _context.SaveChanges();
+
+            if (tarea.AsignadoAId.HasValue)
+                _context.Entry(tarea).Reference(t => t.AsignadoA).Load();
+            if (tarea.OperadorId.HasValue)
+                _context.Entry(tarea).Reference(t => t.Operador).Load();
+
+            return new TareaDto
+            {
+                Id = tarea.Id,
+                EventoId = tarea.EventoId,
+                Titulo = tarea.Titulo,
+                Descripcion = tarea.Descripcion,
+                Estado = tarea.Estado,
+                Categoria = tarea.Categoria,
+                FechaLimite = tarea.FechaLimite,
+                AsignadoAId = tarea.AsignadoAId,
+                AsignadoANombre = tarea.AsignadoA?.Nombre,
+                AsignadoAEmail = tarea.AsignadoA?.Email,
+                OperadorId = tarea.OperadorId,
+                OperadorNombre = tarea.Operador?.Nombre,
+                OperadorEmail = tarea.Operador?.Email,
+                CreadoPorId = tarea.CreadoPorId,
+                Orden = tarea.Orden
             };
         }
 

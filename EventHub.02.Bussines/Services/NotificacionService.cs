@@ -111,7 +111,7 @@ namespace EventHub._02.Bussines.Services
             try
             {
                 var subject = $"EventHub - {tipo}";
-                var body = ConstruirBodyEmail(tipo, nombreDestino, mensaje, nombreEvento, tareaTitulo, eventoId);
+                var body = ConstruirBodyEmail(tipo, nombreDestino, mensaje, nombreEvento, tareaTitulo, emailDestino);
 
                 System.Threading.Tasks.Task.Run(async () =>
                 {
@@ -150,7 +150,7 @@ namespace EventHub._02.Bussines.Services
         }
 
         private string ConstruirBodyEmail(string tipo, string nombreDestino, string mensaje,
-            string nombreEvento, string tareaTitulo, int? eventoId)
+            string nombreEvento, string tareaTitulo, string emailDestino)
         {
             var icono = tipo switch
             {
@@ -170,8 +170,9 @@ namespace EventHub._02.Bussines.Services
                 _ => "#6c757d"
             };
 
-            var botonVerTarea = eventoId.HasValue
-                ? $"<p style='text-align:center; margin:24px 0;'><a href='{_appBaseUrl}/Eventos/Tareas/{eventoId.Value}' style='display:inline-block; padding:12px 24px; background:{color}; color:white; text-decoration:none; border-radius:8px; font-weight:600;'>Ver Tarea →</a></p>"
+            // El operador accede a sus tareas sin login vía el flujo por email.
+            var botonVerTarea = !string.IsNullOrEmpty(emailDestino)
+                ? $"<p style='text-align:center; margin:24px 0;'><a href='{_appBaseUrl}/Operadores/MisTareas?email={Uri.EscapeDataString(emailDestino)}' style='display:inline-block; padding:12px 24px; background:{color}; color:white; text-decoration:none; border-radius:8px; font-weight:600;'>Ver mis tareas →</a></p>"
                 : "";
 
             return $@"

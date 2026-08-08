@@ -38,7 +38,7 @@ namespace EventHub._01.Web.Controllers
             if (cliente == null) return HttpNotFound();
 
             var eventos = await _eventoService.GetAllAsync();
-            eventos = eventos.FindAll(e => e.ClienteNombre == cliente.Nombre);
+            eventos = eventos.FindAll(e => e.ClienteId == cliente.Id);
 
             ViewBag.Cliente = cliente;
             ViewBag.Eventos = eventos;

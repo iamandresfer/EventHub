@@ -17,12 +17,12 @@ tags:
 
 ## Alcance implementado
 - **Data:** entidad `Notificacion` (`tbl_notificaciones`).
-- **Bussines:** `NotificacionService` con DTOs (`NotificacionDto`); `INotificacionService`.
-- **Web:** campana de notificaciones en `_Layout.cshtml`; generación de notificaciones desde tareas/crew en `EventosController`.
+- **Bussines:** `NotificacionService` con DTOs (`NotificacionDto`); `INotificacionService`; envío de email asíncrono (fire-and-forget con contexto propio).
+- **Web:** campana de notificaciones en `_Layout.cshtml`; generación de notificaciones desde tareas en `EventosController`; `HomeController` (ObtenerRecientes, MarcarLeida, MarcarTodasLeidas).
+- **Flujo operador (2026-08-08):** el email de notificación enlaza a `Operadores/MisTareas?email=...` (sin login) en vez del kanban autenticado.
 
 ## Pendientes
 - [ ] SignalR para notificaciones en tiempo real (post-MVP)
-- [ ] Marcar leídas / persistencia de estado de lectura
 
 ## Enlaces
 - Módulo: [[modulos/Operadores]], [[modulos/Tareas]]

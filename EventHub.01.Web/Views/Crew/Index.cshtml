@@ -1,0 +1,222 @@
+@model IEnumerable<EventHub._02.Bussines.DTOs.OperadorDto>
+@{
+    ViewBag.Title = "Crew - " + ViewBag.EventoNombre;
+    ViewBag.HeaderTitle = "Crew del Evento";
+    ViewBag.HeaderSubtitle = ViewBag.EventoNombre as string ?? "";
+    ViewBag.BackUrl = Url.Action("Details", "Eventos", new { id = ViewBag.EventoId });
+    var eventoId = (int)ViewBag.EventoId;
+}
+
+@section headerActions {
+    <div class="section-header__actions">
+        <button class="btn btn-primary btn-sm" onclick="openAsignarModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Asignar Operador
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="openCrearModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo Operador
+        </button>
+    </div>
+}
+
+<div class="card">
+    <table style="width:100%; border-collapse:collapse;">
+        <thead>
+            <tr style="border-bottom:1px solid var(--border); text-align:left;">
+                <th style="padding:12px 16px; font-size:12px; font-weight:600; color:var(--text-muted);">Nombre</th>
+                <th style="padding:12px 16px; font-size:12px; font-weight:600; color:var(--text-muted);">Cédula</th>
+                <th style="padding:12px 16px; font-size:12px; font-weight:600; color:var(--text-muted);">Email</th>
+                <th style="padding:12px 16px; font-size:12px; font-weight:600; color:var(--text-muted);">Rol</th>
+                <th style="padding:12px 16px; font-size:12px; font-weight:600; color:var(--text-muted);">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var o in Model)
+                {
+                    <tr style="border-bottom:1px solid var(--border);">
+                        <td style="padding:12px 16px; font-size:13px; font-weight:500;">@o.Nombre</td>
+                        <td style="padding:12px 16px; font-size:13px; color:var(--text-muted);">@(o.Cedula ?? "-")</td>
+                        <td style="padding:12px 16px; font-size:13px;">@o.Email</td>
+                        <td style="padding:12px 16px; font-size:13px;">@(o.Rol ?? "-")</td>
+                        <td style="padding:12px 16px;">
+                            <button class="btn btn-outline btn-sm" style="color:var(--danger, #dc2626);" onclick="removerDeEvento(@o.Id, '@o.Nombre')">Quitar de evento</button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5" style="padding:32px; text-align:center; color:var(--text-muted); font-size:13px;">Sin operadores asignados a este evento</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Asignar Operador -->
+<div id="asignarModal" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.5); z-index:2000; align-items:center; justify-content:center;">
+    <div style="width:450px; max-width:95vw; background:var(--bg-card); border-radius:12px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:20px 24px; border-bottom:1px solid var(--border);">
+            <h3 style="margin:0; font-size:18px; font-weight:700;">Asignar Operador</h3>
+            <button onclick="closeAsignarModal()" style="background:none; border:none; cursor:pointer; color:var(--text-muted);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <form id="asignarForm" style="padding:24px;">
+            @Html.AntiForgeryToken()
+            <div class="form-group">
+                <label style="font-size:13px; font-weight:600;">Operador *</label>
+                <select name="operadorId" id="asignarOperadorId" class="form-control" required>
+                    <option value="">Selecciona un operador...</option>
+                </select>
+            </div>
+            <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:20px;">
+                <button type="button" class="btn btn-outline" onclick="closeAsignarModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Asignar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Crear Operador (directo al evento) -->
+<div id="crearModal" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.5); z-index:2000; align-items:center; justify-content:center;">
+    <div style="width:450px; max-width:95vw; background:var(--bg-card); border-radius:12px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:20px 24px; border-bottom:1px solid var(--border);">
+            <h3 style="margin:0; font-size:18px; font-weight:700;">Nuevo Operador</h3>
+            <button onclick="closeCrearModal()" style="background:none; border:none; cursor:pointer; color:var(--text-muted);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <form id="crearForm" style="padding:24px;">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="EventoId" value="@eventoId" />
+            <div class="form-group">
+                <label style="font-size:13px; font-weight:600;">Nombre *</label>
+                <input type="text" name="Nombre" class="form-control" required maxlength="150" />
+            </div>
+            <div class="form-group">
+                <label style="font-size:13px; font-weight:600;">Cédula</label>
+                <input type="text" name="Cedula" class="form-control" maxlength="20" />
+            </div>
+            <div class="form-group">
+                <label style="font-size:13px; font-weight:600;">Email *</label>
+                <input type="email" name="Email" class="form-control" required maxlength="200" />
+            </div>
+            <div class="form-group">
+                <label style="font-size:13px; font-weight:600;">Teléfono</label>
+                <input type="text" name="Telefono" class="form-control" maxlength="20" />
+            </div>
+            <div class="form-group">
+                <label style="font-size:13px; font-weight:600;">Rol</label>
+                <input type="text" name="Rol" class="form-control" maxlength="100" placeholder="Ej: Técnico, DJ, Coordinador" />
+            </div>
+            <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:20px;">
+                <button type="button" class="btn btn-outline" onclick="closeCrearModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Crear y Asignar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        var eventoId = @eventoId;
+        var asignados = [];
+
+        function cargarAsignados() {
+            fetch('@Url.Action("ObtenerCrewEventoAjax", "Crew")?eventoId=' + eventoId)
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        asignados = data.crew.map(function(c) { return c.Id; });
+                    }
+                });
+        }
+
+        function cargarOperadores() {
+            var select = document.getElementById('asignarOperadorId');
+            fetch('@Url.Action("ObtenerOperadoresAjax", "Crew")')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (!data.success) return;
+                    select.innerHTML = '<option value="">Selecciona un operador...</option>';
+                    data.operadores.forEach(function(o) {
+                        if (!o.Estado) return;
+                        var opt = document.createElement('option');
+                        opt.value = o.Id;
+                        opt.textContent = o.Nombre + (o.Rol ? ' (' + o.Rol + ')' : '') + (asignados.indexOf(o.Id) >= 0 ? ' — ya asignado' : '');
+                        if (asignados.indexOf(o.Id) >= 0) opt.disabled = true;
+                        select.appendChild(opt);
+                    });
+                });
+        }
+
+        function openAsignarModal() {
+            cargarAsignados();
+            setTimeout(cargarOperadores, 100);
+            document.getElementById('asignarModal').style.display = 'flex';
+        }
+        function closeAsignarModal() {
+            document.getElementById('asignarModal').style.display = 'none';
+        }
+
+        document.getElementById('asignarForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var fd = new FormData(this);
+            fd.append('eventoId', eventoId);
+            fetch('@Url.Action("AsignarAEventoAjax", "Crew")', { method: 'POST', body: fd })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        window.EventHubSwal.success('Operador asignado al evento.');
+                        location.reload();
+                    } else {
+                        window.EventHubSwal.error('Error: ' + data.message);
+                    }
+                });
+        });
+
+        function openCrearModal() {
+            document.getElementById('crearForm').reset();
+            document.getElementById('crearModal').style.display = 'flex';
+        }
+        function closeCrearModal() {
+            document.getElementById('crearModal').style.display = 'none';
+        }
+
+        document.getElementById('crearForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var fd = new FormData(this);
+            fetch('@Url.Action("CrearOperadorAjax", "Crew")', { method: 'POST', body: fd })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        window.EventHubSwal.success('Operador creado y asignado.');
+                        location.reload();
+                    } else {
+                        window.EventHubSwal.error('Error: ' + data.message);
+                    }
+                });
+        });
+
+        function removerDeEvento(id, nombre) {
+            if (!confirm('¿Quitar a "' + nombre + '" de este evento?')) return;
+            var fd = new FormData();
+            fd.append('operadorId', id);
+            fetch('@Url.Action("RemoverDeEventoAjax", "Crew")', { method: 'POST', body: fd })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        window.EventHubSwal.success('Operador removido del evento.');
+                        location.reload();
+                    } else {
+                        window.EventHubSwal.error('Error: ' + data.message);
+                    }
+                });
+        }
+    </script>
+}

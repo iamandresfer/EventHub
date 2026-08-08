@@ -23,7 +23,7 @@ tags:
 
 ## Detalles relevantes
 - La tarea referencia a `Operador` (no `CrewOperador`) desde la unificación 2026-08-04.
-- Campos clave: `act_fecha_hora_estimada_*`, `act_estado` (Pendiente, En curso, Completado, Retrasado), `act_prioridad`.
+- Campos clave: `act_estado` (Pendiente, EnProgreso, Completado), `act_orden` para ordenar columnas kanban.
 
 ## Enlaces
 - Plan: [[superpowers/plans/2026-08-04-unify-operadores-crew|Unificar Operadores + Crew]]

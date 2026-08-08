@@ -326,7 +326,7 @@ namespace EventHub._01.Web.Controllers
             try
             {
                 var tareaService = new TareaService();
-                var result = tareaService.CrearTarea(model);
+                var result = tareaService.CrearTarea(model, GetUserId());
 
                 if (result.OperadorId.HasValue && !string.IsNullOrEmpty(result.OperadorEmail))
                 {
@@ -367,22 +367,11 @@ namespace EventHub._01.Web.Controllers
 
             try
             {
-                var context = new EventHubContext();
-                var tarea = context.Tareas.Find(model.Id);
-                if (tarea == null) return Json(new { success = false, message = "Tarea no encontrada" });
-
-                var fechaAnterior = tarea.FechaLimite;
-                tarea.Titulo = model.Titulo;
-                tarea.Descripcion = model.Descripcion;
-                tarea.FechaLimite = model.FechaLimite;
-                tarea.AsignadoAId = model.AsignadoAId;
-                tarea.OperadorId = model.OperadorId;
-                
-                context.SaveChanges();
-
                 var tareaService = new TareaService();
-                var updated = tareaService.ObtenerPorId(model.Id);
+                var updated = tareaService.ActualizarTarea(model);
+                if (updated == null) return Json(new { success = false, message = "Tarea no encontrada" });
 
+                var context = new EventHubContext();
                 if (updated.OperadorId.HasValue && !string.IsNullOrEmpty(updated.OperadorEmail))
                 {
                     var evento = context.Eventos.Find(model.EventoId);

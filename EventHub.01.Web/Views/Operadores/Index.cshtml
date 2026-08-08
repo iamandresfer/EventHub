@@ -1,0 +1,229 @@
+@model IEnumerable<EventHub._02.Bussines.DTOs.OperadorConEventosDto>
+@{
+    ViewBag.Title = "Operadores";
+    ViewBag.HeaderTitle = "Operadores";
+    ViewBag.HeaderSubtitle = "Gestión global de operadores del sistema";
+    ViewBag.BackUrl = Url.Action("Index", "Home");
+    var search = ViewBag.Search as string ?? "";
+}
+
+@section headerActions {
+    <div class="section-header__actions">
+        <button class="btn btn-primary btn-sm" onclick="openOperadorModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo Operador
+        </button>
+    </div>
+}
+
+<div class="action-bar">
+    <form method="get" action="@Url.Action("Index")" style="display:flex; gap:8px;">
+        <div class="search-box">
+            <input type="text" name="search" value="@search" class="form-control" placeholder="Buscar por nombre, email, cédula o rol..." style="width:280px" />
+        </div>
+        <button type="submit" class="btn btn-outline btn-sm">Buscar</button>
+        @if (!string.IsNullOrEmpty(search))
+        {
+            <a href="@Url.Action("Index")" class="btn btn-outline btn-sm">Limpiar</a>
+        }
+    </form>
+</div>
+
+<div class="card">
+    <table style="width:100%; border-collapse:collapse;">
+        <thead>
+            <tr style="border-bottom:1px solid var(--border); text-align:left;">
+                <th style="padding:12px 16px; font-size:12px; font-weight:600; color:var(--text-muted);">Nombre</th>
+                <th style="padding:12px 16px; font-size:12px; font-weight:600; color:var(--text-muted);">Cédula</th>
+                <th style="padding:12px 16px; font-size:12px; font-weight:600; color:var(--text-muted);">Email</th>
+                <th style="padding:12px 16px; font-size:12px; font-weight:600; color:var(--text-muted);">Rol</th>
+                <th style="padding:12px 16px; font-size:12px; font-weight:600; color:var(--text-muted);">Evento asignado</th>
+                <th style="padding:12px 16px; font-size:12px; font-weight:600; color:var(--text-muted);">Estado</th>
+                <th style="padding:12px 16px; font-size:12px; font-weight:600; color:var(--text-muted);">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var o in Model)
+                {
+                    var evento = o.Eventos != null ? o.Eventos.FirstOrDefault() : null;
+                    <tr style="border-bottom:1px solid var(--border);">
+                        <td style="padding:12px 16px; font-size:13px; font-weight:500;">@o.Nombre</td>
+                        <td style="padding:12px 16px; font-size:13px; color:var(--text-muted);">@(o.Cedula ?? "-")</td>
+                        <td style="padding:12px 16px; font-size:13px;">@o.Email</td>
+                        <td style="padding:12px 16px; font-size:13px;">@(o.Rol ?? "-")</td>
+                        <td style="padding:12px 16px; font-size:13px;">
+                            @if (evento != null)
+                            {
+                                <span style="display:inline-block; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600; background:#dbeafe; color:#1e40af;">@evento.EventoNombre</span>
+                            }
+                            else
+                            {
+                                <span style="color:var(--text-muted); font-size:12px;">Global</span>
+                            }
+                        </td>
+                        <td style="padding:12px 16px;">
+                            <span style="display:inline-block; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600; @(o.Estado ? "background:#d1fae5; color:#065f46;" : "background:#fee2e2; color:#991b1b;")">
+                                @(o.Estado ? "Activo" : "Inactivo")
+                            </span>
+                        </td>
+                        <td style="padding:12px 16px;">
+                            <div style="display:flex; gap:6px;">
+                                <button class="btn btn-outline btn-sm" onclick='openOperadorModal({ id: @o.Id, nombre: "@(o.Nombre?.Replace("\"", "'"))", cedula: "@(o.Cedula ?? "")", email: "@(o.Email ?? "")", telefono: "@(o.Telefono ?? "")", rol: "@(o.Rol ?? "")" })'>Editar</button>
+                                @if (evento != null)
+                                {
+                                    <button class="btn btn-outline btn-sm" onclick="removerDeEvento(@o.Id, '@o.Nombre')">Quitar de evento</button>
+                                }
+                                <button class="btn btn-outline btn-sm" onclick="toggleEstado(@o.Id, '@o.Nombre')">@(o.Estado ? "Desactivar" : "Activar")</button>
+                                <button class="btn btn-outline btn-sm" style="color:var(--danger, #dc2626);" onclick="eliminarOperador(@o.Id, '@o.Nombre')">Eliminar</button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="7" style="padding:32px; text-align:center; color:var(--text-muted); font-size:13px;">No hay operadores registrados</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Crear/Editar Operador -->
+<div id="operadorModal" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.5); z-index:2000; align-items:center; justify-content:center;">
+    <div style="width:450px; max-width:95vw; background:var(--bg-card); border-radius:12px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:20px 24px; border-bottom:1px solid var(--border);">
+            <h3 style="margin:0; font-size:18px; font-weight:700;" id="operadorModalTitle">Nuevo Operador</h3>
+            <button onclick="closeOperadorModal()" style="background:none; border:none; cursor:pointer; color:var(--text-muted);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <form id="operadorForm" style="padding:24px;">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="Id" id="opeId" value="0" />
+            <div class="form-group">
+                <label style="font-size:13px; font-weight:600;">Nombre *</label>
+                <input type="text" name="Nombre" id="opeNombre" class="form-control" required maxlength="150" />
+            </div>
+            <div class="form-group">
+                <label style="font-size:13px; font-weight:600;">Cédula</label>
+                <input type="text" name="Cedula" id="opeCedula" class="form-control" maxlength="20" />
+            </div>
+            <div class="form-group">
+                <label style="font-size:13px; font-weight:600;">Email *</label>
+                <input type="email" name="Email" id="opeEmail" class="form-control" required maxlength="200" />
+            </div>
+            <div class="form-group">
+                <label style="font-size:13px; font-weight:600;">Teléfono</label>
+                <input type="text" name="Telefono" id="opeTelefono" class="form-control" maxlength="20" />
+            </div>
+            <div class="form-group">
+                <label style="font-size:13px; font-weight:600;">Rol</label>
+                <input type="text" name="Rol" id="opeRol" class="form-control" maxlength="100" placeholder="Ej: Técnico, DJ, Coordinador" />
+            </div>
+            <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:20px;">
+                <button type="button" class="btn btn-outline" onclick="closeOperadorModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="operadorSubmitBtn">Crear Operador</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        var operadorModal = document.getElementById('operadorModal');
+        var operadorForm = document.getElementById('operadorForm');
+
+        function openOperadorModal(o) {
+            operadorForm.reset();
+            document.getElementById('operadorModalTitle').textContent = 'Nuevo Operador';
+            document.getElementById('operadorSubmitBtn').textContent = 'Crear Operador';
+            document.getElementById('opeId').value = '0';
+            if (o) {
+                document.getElementById('operadorModalTitle').textContent = 'Editar Operador';
+                document.getElementById('operadorSubmitBtn').textContent = 'Guardar Cambios';
+                document.getElementById('opeId').value = o.id;
+                document.getElementById('opeNombre').value = o.nombre;
+                document.getElementById('opeCedula').value = o.cedula;
+                document.getElementById('opeEmail').value = o.email;
+                document.getElementById('opeTelefono').value = o.telefono;
+                document.getElementById('opeRol').value = o.rol;
+            }
+            operadorModal.style.display = 'flex';
+        }
+
+        function closeOperadorModal() {
+            operadorModal.style.display = 'none';
+        }
+
+        operadorForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var fd = new FormData(this);
+            var isEdit = parseInt(document.getElementById('opeId').value) > 0;
+            var url = isEdit ? '@Url.Action("ActualizarOperadorAjax", "Operadores")' : '@Url.Action("CrearOperadorAjax", "Operadores")';
+            fetch(url, { method: 'POST', body: fd })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        window.EventHubSwal.success(isEdit ? 'Operador actualizado correctamente.' : 'Operador creado correctamente.');
+                        location.reload();
+                    } else {
+                        window.EventHubSwal.error('Error: ' + (data.message || 'No se pudo guardar el operador.'));
+                    }
+                })
+                .catch(function() {
+                    window.EventHubSwal.error('Error de conexión. Inténtalo de nuevo.');
+                });
+        });
+
+        function removerDeEvento(id, nombre) {
+            if (!confirm('¿Quitar a "' + nombre + '" de su evento asignado?')) return;
+            var fd = new FormData();
+            fd.append('operadorId', id);
+            fetch('@Url.Action("RemoverDeEventoAjax", "Operadores")', { method: 'POST', body: fd })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        window.EventHubSwal.success('Operador liberado del evento.');
+                        location.reload();
+                    } else {
+                        window.EventHubSwal.error('Error: ' + data.message);
+                    }
+                });
+        }
+
+        function toggleEstado(id, nombre) {
+            if (!confirm('¿Cambiar estado de "' + nombre + '"?')) return;
+            var fd = new FormData();
+            fd.append('id', id);
+            fetch('@Url.Action("ToggleEstadoAjax", "Operadores")', { method: 'POST', body: fd })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        window.EventHubSwal.error('Error: ' + data.message);
+                    }
+                });
+        }
+
+        function eliminarOperador(id, nombre) {
+            if (!confirm('¿Eliminar definitivamente a "' + nombre + '"? Esta acción no se puede deshacer.')) return;
+            var fd = new FormData();
+            fd.append('id', id);
+            fetch('@Url.Action("EliminarOperadorAjax", "Operadores")', { method: 'POST', body: fd })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        window.EventHubSwal.success('Operador eliminado.');
+                        location.reload();
+                    } else {
+                        window.EventHubSwal.error('Error: ' + data.message);
+                    }
+                });
+        }
+    </script>
+}

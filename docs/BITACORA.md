@@ -90,3 +90,27 @@ proyecto: EventHub
 - Revisar la guía de sesiones y continuar los módulos En curso.
 
 Nota de sesión: [[2026-08-07_habilitacion-cli-obsidian]]
+
+## Sesión 5 — 2026-08-08: Estabilizacion MVP
+
+### Cambios Realizados
+
+#### Repositorio
+- Checkpoint `3253f97`: credenciales SMTP movidas a `Web.Smtp.config` (gitignored) + `.example`; incluyó también los cambios de herramientas de la Sesión 4.
+
+#### EventHub.01.Web
+- Habilitado `OperadoresController` (estaba fuera del `.csproj`, código muerto) con CRUD/búsqueda/toggle/remover AJAX (`Views/Operadores/Index.cshtml`).
+- Vista `Views/Crew/Index.cshtml` (crew por evento) + nav "Operadores" en `_Layout`.
+- `Web.config`: `Operadores/MisTareas` anónimo para el flujo por email.
+
+#### EventHub.02.Bussines
+- `TareaService.ActualizarTarea` + `CrearTarea(creadoPorId)` puebla `CreadoPorId`.
+- `NotificacionService`: email de notificación enlaza a `Operadores/MisTareas?email=...`.
+
+#### Docs
+- Corregido error en `Presupuesto.md` (script ALTER: `tar_categoria`/foto operadores, no `tbl_ingresos`); `Operadores.md` con wiring nuevo; `Notificaciones.md`/`Tareas.md` alineados.
+
+### Pendientes
+- Rotar app password SMTP + smoke test manual en navegador (detalle en la nota).
+
+Nota de sesión: [[2026-08-08_estabilizacion-mvp]]

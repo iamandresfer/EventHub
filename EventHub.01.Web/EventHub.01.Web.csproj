@@ -161,6 +161,7 @@
     <Compile Include="Controllers\CrewController.cs" />
     <Compile Include="Controllers\ClientesController.cs" />
     <Compile Include="Controllers\PresupuestoController.cs" />
+    <Compile Include="Controllers\OperadoresController.cs" />
     <Compile Include="Models\LoginViewModel.cs" />
     <Compile Include="Models\RegisterViewModel.cs" />
     <Compile Include="Models\ForgotPasswordViewModel.cs" />
@@ -246,6 +247,9 @@
     <Content Include="Views\Clientes\Details.cshtml" />
     <Content Include="Views\Crew\IndexGlobal.cshtml" />
     <Content Include="Views\Presupuesto\Index.cshtml" />
+    <Content Include="Views\Presupuesto\Seleccionar.cshtml" />
+    <Content Include="Views\Operadores\Index.cshtml" />
+    <Content Include="Views\Operadores\MisTareas.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
