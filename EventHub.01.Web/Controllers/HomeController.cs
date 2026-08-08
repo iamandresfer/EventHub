@@ -36,6 +36,32 @@ namespace EventHub._01.Web.Controllers
             return Json(new { success = true, notificaciones = notificaciones, noLeidas = noLeidas }, JsonRequestBehavior.AllowGet);
         }
 
+        [HttpGet]
+        public async Task<ActionResult> ObtenerKpis()
+        {
+            var context = new EventHubContext();
+            var eventoService = new EventoService(context);
+            var d = await eventoService.GetDashboardAsync();
+            return Json(new
+            {
+                success = true,
+                eventosActivos = d.EventosActivos,
+                totalEventos = d.TotalEventos,
+                eventosPlanificacion = d.EventosPlanificacion,
+                eventosEjecucion = d.EventosEjecucion,
+                eventosFinalizados = d.EventosFinalizados,
+                clientesActivos = d.ClientesActivos,
+                totalClientes = d.TotalClientes,
+                totalPresupuestoEstimado = d.TotalPresupuestoEstimado,
+                totalGastado = d.TotalGastado,
+                totalRecaudado = d.TotalRecaudado,
+                ejecucionGasto = d.EjecucionGasto,
+                totalOperadores = d.TotalOperadores,
+                operadoresActivos = d.OperadoresActivos,
+                tareasHoy = d.TareasHoy
+            }, JsonRequestBehavior.AllowGet);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult MarcarLeida(int id)

@@ -114,3 +114,28 @@ Nota de sesión: [[2026-08-07_habilitacion-cli-obsidian]]
 - Rotar app password SMTP + smoke test manual en navegador (detalle en la nota).
 
 Nota de sesión: [[2026-08-08_estabilizacion-mvp]]
+
+## Sesión 6 — 2026-08-08: Cierre MVP — Dashboard consolidado + casi-en-vivo
+
+### Cambios Realizados
+
+#### Repositorio
+- Commit: unificación operadores+crew en `tbl_crew_operadores` (`a939f76`); fix sintaxis Razor nav Crew (`b0615b5`).
+
+#### EventHub.02.Bussines
+- `DashboardDto` extendido (financiero global, crew, `TareasHoy`) + DTO `TareaHoyDto`.
+- `EventoService.GetDashboardAsync()` con sumas financieras, conteos de crew y tareas de hoy.
+
+#### EventHub.01.Web
+- `HomeController.ObtenerKpis()` (JSON).
+- `Home/Index.cshtml`: cards financieros (estimado/gastado/recaudado/% ejecución) + card crew + bloque "Tareas de hoy"; polling 15s con pausa por pestaña oculta.
+- `_Layout.cshtml`: polling del badge de notificaciones cada 30s.
+
+#### Docs
+- Módulos `Dashboard`, `Presupuesto`, `Notificaciones` → `Completado` (MVP). `INDEX.md` actualizado.
+
+### Próximos Pasos
+- Smoke test manual en navegador.
+- SignalR post-MVP para reemplazar el polling.
+
+Nota de sesión: [[2026-08-08_dashboard-presupuesto]]

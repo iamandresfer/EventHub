@@ -2,8 +2,8 @@
 tipo: modulo
 proyecto: EventHub
 modulo: Notificaciones
-estado: En desarrollo
-fecha: 2026-08-04
+estado: Completado
+fecha: 2026-08-08
 tags:
   - modulo
   - notificaciones
@@ -12,7 +12,7 @@ tags:
 # Módulo: Notificaciones
 
 ## Estado
-> [!warning] En desarrollo
+> [!success] Completado (MVP)
 > Sistema de notificaciones por evento + campana en el header.
 
 ## Alcance implementado
@@ -20,6 +20,7 @@ tags:
 - **Bussines:** `NotificacionService` con DTOs (`NotificacionDto`); `INotificacionService`; envío de email asíncrono (fire-and-forget con contexto propio).
 - **Web:** campana de notificaciones en `_Layout.cshtml`; generación de notificaciones desde tareas en `EventosController`; `HomeController` (ObtenerRecientes, MarcarLeida, MarcarTodasLeidas).
 - **Flujo operador (2026-08-08):** el email de notificación enlaza a `Operadores/MisTareas?email=...` (sin login) en vez del kanban autenticado.
+- **Casi en vivo (2026-08-08):** badge de no leídas con polling cada 30s desde `_Layout.cshtml` (pausa con `document.hidden`).
 
 ## Pendientes
 - [ ] SignalR para notificaciones en tiempo real (post-MVP)

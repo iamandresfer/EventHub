@@ -35,9 +35,9 @@ Sistema integral de gestión de eventos (Ecuador). ASP.NET MVC 5 + EF6 + SQL Ser
 | Eventos y Clientes | [[modulos/Eventos]] | Completado (MVP) |
 | Tareas y Cronogramas | [[modulos/Tareas]] | Completado (MVP) |
 | Operadores / Crew | [[modulos/Operadores]] | Completado (unificado) |
-| Presupuesto (Gastos/Ingresos) | [[modulos/Presupuesto]] | En desarrollo |
-| Notificaciones | [[modulos/Notificaciones]] | En desarrollo |
-| Dashboard / KPIs | [[modulos/Dashboard]] | En desarrollo |
+| Presupuesto (Gastos/Ingresos) | [[modulos/Presupuesto]] | Completado (MVP) |
+| Notificaciones | [[modulos/Notificaciones]] | Completado (MVP) |
+| Dashboard / KPIs | [[modulos/Dashboard]] | Completado (MVP) |
 
 ## Arquitectura
 

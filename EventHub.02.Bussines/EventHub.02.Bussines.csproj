@@ -104,6 +104,7 @@
     <Compile Include="DTOs\OperadorDto.cs" />
     <Compile Include="DTOs\NotificacionDto.cs" />
     <Compile Include="DTOs\TareaAdjuntoDto.cs" />
+    <Compile Include="DTOs\TareaHoyDto.cs" />
     <Compile Include="Services\ITareaService.cs" />
     <Compile Include="Services\TareaService.cs" />
     <Compile Include="Services\IOperadorService.cs" />

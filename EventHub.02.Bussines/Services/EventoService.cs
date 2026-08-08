@@ -209,8 +209,47 @@ namespace EventHub._02.Bussines.Services
                 EventosActividad = await _context.Eventos
                     .Where(e => e.FechaInicio >= inicioActividad && e.FechaInicio <= now)
                     .Select(e => e.FechaInicio)
-                    .ToListAsync()
+                    .ToListAsync(),
+                TotalPresupuestoEstimado = await _context.Eventos.SumAsync(e => e.PresupuestoEstimado) ?? 0,
+                TotalGastado = await _context.Eventos.SumAsync(e => e.GastoReal) ?? 0,
+                TotalRecaudado = await _context.Eventos.SumAsync(e => e.TotalIngresos) ?? 0,
+                EjecucionGasto = await CalcularEjecucionGastoAsync(),
+                TotalOperadores = await _context.Operadores.CountAsync(),
+                OperadoresActivos = await _context.Operadores.CountAsync(o => o.Estado),
+                TareasHoy = await ObtenerTareasHoyAsync()
             };
+        }
+
+        private async Task<decimal?> CalcularEjecucionGastoAsync()
+        {
+            var estimado = await _context.Eventos.SumAsync(e => e.PresupuestoEstimado) ?? 0;
+            var gastado = await _context.Eventos.SumAsync(e => e.GastoReal) ?? 0;
+            if (estimado <= 0) return null;
+            return Math.Round(gastado * 100m / estimado, 1);
+        }
+
+        private async Task<List<TareaHoyDto>> ObtenerTareasHoyAsync()
+        {
+            var hoy = DateTime.Today;
+            var manana = hoy.AddDays(1);
+
+            return await _context.Tareas
+                .Where(t => t.FechaLimite.HasValue && t.FechaLimite.Value >= hoy && t.FechaLimite.Value < manana)
+                .OrderBy(t => t.Orden)
+                .ThenBy(t => t.Estado)
+                .Take(15)
+                .Select(t => new TareaHoyDto
+                {
+                    Id = t.Id,
+                    Titulo = t.Titulo,
+                    EventoId = t.EventoId,
+                    EventoNombre = t.Evento.Nombre,
+                    Estado = t.Estado,
+                    OperadorNombre = t.Operador.Nombre,
+                    FechaLimite = t.FechaLimite,
+                    Orden = t.Orden
+                })
+                .ToListAsync();
         }
 
         private async Task<string> GenerarCodigoAsync()

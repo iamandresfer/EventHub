@@ -778,6 +778,14 @@
             .then(function(data) { if (data.success) updateBadge(data.noLeidas); });
         })();
 
+        // Poll unread badge every 30s (pause when tab hidden)
+        setInterval(function() {
+            if (document.hidden) return;
+            fetch('@Url.Action("ObtenerRecientes", "Home")')
+            .then(function(r) { return r.json(); })
+            .then(function(data) { if (data.success) updateBadge(data.noLeidas); });
+        }, 30000);
+
         // Close panel when clicking outside
         document.addEventListener('click', function(e) {
             var bell = document.getElementById('notifBell');
