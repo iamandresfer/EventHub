@@ -1,3 +1,11 @@
+---
+tipo: spec
+proyecto: EventHub
+modulo: Eventos
+fecha: 2026-07-20
+estado: Completado
+---
+
 # Gestión de Eventos, Clientes y Dashboard — Especificación
 
 ## Objetivo

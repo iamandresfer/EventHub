@@ -1,3 +1,11 @@
+---
+tipo: spec
+proyecto: EventHub
+modulo: UI
+fecha: 2026-07-24
+estado: En curso
+---
+
 # EventHub UI Improvements - Design Spec
 
 **Date:** 2026-07-24  

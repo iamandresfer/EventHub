@@ -1,0 +1,25 @@
+{
+	"nodes":[
+		{"id":"0011aaaa2222bbbb","type":"text","text":"## tbl_clientes\n\ncli_id (PK)\ncli_razon_social\ncli_ruc (UNIQUE)\ncli_estado","x":0,"y":0,"width":260,"height":140,"color":"4"},
+		{"id":"0022aaaa2222bbbb","type":"text","text":"## tbl_eventos\n\neve_id (PK)\neve_codigo (UNIQUE)\neve_nombre\neve_cli_id (FK → clientes)\neve_ven_id (FK → venues)\neve_tev_id (FK → tipo_evento)\neve_presupuesto_estimado\neve_estado","x":400,"y":0,"width":300,"height":200,"color":"5"},
+		{"id":"0033aaaa2222bbbb","type":"text","text":"## tbl_tipo_evento\n\ntev_id (PK)\ntev_nombre","x":840,"y":0,"width":260,"height":140,"color":"2"},
+		{"id":"0044aaaa2222bbbb","type":"text","text":"## tbl_venues\n\nven_id (PK)\nven_nombre","x":840,"y":200,"width":260,"height":140,"color":"2"},
+		{"id":"0055aaaa2222bbbb","type":"text","text":"## tbl_operadores\n\nope_id (PK)\nope_nombre\nope_email\nope_rol\nope_eve_id (FK → eventos, NULL=global)","x":0,"y":300,"width":300,"height":160,"color":"6"},
+		{"id":"0066aaaa2222bbbb","type":"text","text":"## tbl_tareas\n\ntar_id (PK)\ntar_eve_id (FK → eventos)\ntar_operador_id (FK → operadores)\ntar_titulo\ntar_estado\ntar_prioridad","x":400,"y":300,"width":300,"height":180,"color":"6"},
+		{"id":"0077aaaa2222bbbb","type":"text","text":"## tbl_gastos\n\ngas_id (PK)\ngas_eve_id (FK → eventos)\ngas_concepto\ngas_monto","x":0,"y":560,"width":300,"height":180,"color":"3"},
+		{"id":"0088aaaa2222bbbb","type":"text","text":"## tbl_ingresos\n\ning_id (PK)\ning_eve_id (FK → eventos)\ning_categoria\ning_monto\ning_foto_url","x":400,"y":560,"width":300,"height":200,"color":"3"},
+		{"id":"0099aaaa2222bbbb","type":"text","text":"## tbl_notificaciones\n\nnot_id (PK)\nnot_eve_id (FK → eventos)\nnot_tipo\nnot_mensaje\nnot_fecha_creacion","x":840,"y":420,"width":300,"height":230,"color":"2"},
+		{"id":"0101aaaa2222bbbb","type":"text","text":"## tbl_usuarios\n\nusu_id (PK)\nusu_email (UNIQUE)\nusu_password_hash (bcrypt)\nusu_rol_id","x":0,"y":800,"width":300,"height":280,"color":"1"}
+	],
+	"edges":[
+		{"id":"a000000000000001","fromNode":"0011aaaa2222bbbb","fromSide":"right","toNode":"0022aaaa2222bbbb","toSide":"left","label":"1:N"},
+		{"id":"a000000000000002","fromNode":"0033aaaa2222bbbb","fromSide":"left","toNode":"0022aaaa2222bbbb","toSide":"right","label":"1:N"},
+		{"id":"a000000000000003","fromNode":"0044aaaa2222bbbb","fromSide":"left","toNode":"0022aaaa2222bbbb","toSide":"right","label":"1:N"},
+		{"id":"a000000000000004","fromNode":"0022aaaa2222bbbb","fromSide":"bottom","toNode":"0066aaaa2222bbbb","toSide":"top","label":"1:N"},
+		{"id":"a000000000000005","fromNode":"0055aaaa2222bbbb","fromSide":"right","toNode":"0066aaaa2222bbbb","toSide":"left","label":"1:N"},
+		{"id":"a000000000000006","fromNode":"0022aaaa2222bbbb","fromSide":"bottom","toNode":"0077aaaa2222bbbb","toSide":"top","label":"1:N"},
+		{"id":"a000000000000007","fromNode":"0022aaaa2222bbbb","fromSide":"bottom","toNode":"0088aaaa2222bbbb","toSide":"top","label":"1:N"},
+		{"id":"a000000000000008","fromNode":"0022aaaa2222bbbb","fromSide":"bottom","toNode":"0099aaaa2222bbbb","toSide":"top","label":"1:N"},
+		{"id":"a000000000000009","fromNode":"0022aaaa2222bbbb","fromSide":"bottom","toNode":"0055aaaa2222bbbb","toSide":"top","label":"N:1"}
+	]
+}

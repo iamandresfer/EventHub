@@ -1,4 +1,16 @@
+---
+title: Bitácora de Desarrollo
+tags:
+  - project
+  - bitacora
+tipo: bitacora
+proyecto: EventHub
+---
+
 # 📋 Bitácora de Desarrollo - EventProduction Hub
+
+> [!info] Índice del proyecto
+> Volver a [[INDEX]] · Estado vivo en [[Proyecto.base]]
 
 ## Sesión 1 — 2026-07-16: Módulo de Seguridad y Autenticación
 
@@ -40,3 +52,41 @@
 - Módulo de Gestión de Usuarios (CRUD) para administradores
 - Dashboard principal con KPIs
 - Módulo de Clientes
+
+## Sesión 2 — 2026-07-22: Versión inicial + notificaciones y crew por evento
+
+### Cambios Realizados
+
+#### Repositorio
+- Commit inicial: EventHub MVC con autenticación, eventos, clientes y tareas (`f770020`).
+- Excluido `.opencode/skills` de la detección de lenguaje de GitHub (`44bbddb`).
+- Sistema de notificaciones + crew por evento (`538c50e`).
+- Fix: archivos nuevos agregados al `.csproj` para compilación (`55cce8e`).
+
+### Notas
+- Los specs de diseño de Auth/UI (2026-07-20 y 2026-07-24) viven en `docs/superpowers/specs/` (trabajo de diseño sin commits).
+
+## Sesión 3 — 2026-08-05: Presupuesto (ingresos), ECharts y operadores unificados
+
+### Cambios Realizados
+
+#### Repositorio
+- Módulo de presupuesto con ingresos, gráficos ECharts, header de sección unificado y operadores (`4483866`).
+
+#### Módulos afectados
+- Presupuesto (Gastos/Ingresos) → En desarrollo (`docs/modulos/Presupuesto.md`).
+- Operadores / Crew → unificado (plan `2026-08-04-unify-operadores-crew`).
+
+## Sesión 4 — 2026-08-07: Habilitación CLI + Obsidian
+
+### Cambios Realizados
+- Habilitado el CLI de Obsidian + vault `docs` registrado.
+- Scripts `nueva-sesion.ps1` (crea sesión) y `obsidian-cli-setup.ps1 -Start` (abre Obsidian + vault).
+- `AGENTS.md` con ritual de inicio/cierre de sesión y skills de Obsidian.
+- Backfill de sesiones 2 y 3 desde git log.
+- Creada nota `ALCANCE.md` (panorama del proyecto) e integrada al ritual de inicio.
+
+### Próximos Pasos
+- Revisar la guía de sesiones y continuar los módulos En curso.
+
+Nota de sesión: [[2026-08-07_habilitacion-cli-obsidian]]

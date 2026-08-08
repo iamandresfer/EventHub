@@ -1,0 +1,65 @@
+filters:
+  or:
+    - file.hasTag("modulo")
+    - tipo == "plan"
+    - tipo == "spec"
+formulas:
+  estado_icon: if(estado == "Completado", "✅", if(estado == "En curso", "🔄", if(estado == "Pendiente", "⏳", "❔")))
+  vencido: if(estado != "Completado" && fecha, date(fecha) < today(), false)
+properties:
+  estado:
+    displayName: Estado
+  modulo:
+    displayName: Módulo
+  fecha:
+    displayName: Fecha
+  tipo:
+    displayName: Tipo
+  formula.vencido:
+    displayName: Retrasado
+views:
+  - type: table
+    name: Por módulo
+    groupBy:
+      property: modulo
+      direction: ASC
+    order:
+      - file.name
+      - formula.estado_icon
+      - tipo
+      - estado
+      - fecha
+  - type: table
+    name: En curso
+    filters:
+      and:
+        - estado == "En curso"
+    groupBy:
+      property: estado
+      direction: ASC
+    order:
+      - file.name
+      - modulo
+      - fecha
+  - type: table
+    name: Completados
+    filters:
+      and:
+        - estado == "Completado"
+    order:
+      - file.name
+      - modulo
+      - fecha
+    summaries:
+      file.name: Filled
+  - type: list
+    name: Planes y specs
+    filters:
+      or:
+        - tipo == "plan"
+        - tipo == "spec"
+    order:
+      - file.name
+      - formula.estado_icon
+      - modulo
+      - estado

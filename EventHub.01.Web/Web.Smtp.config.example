@@ -1,0 +1,18 @@
+<appSettings>
+  <add key="webpages:Version" value="3.0.0.0" />
+  <add key="webpages:Enabled" value="false" />
+  <add key="ClientValidationEnabled" value="true" />
+  <add key="UnobtrusiveJavaScriptEnabled" value="true" />
+
+  <!-- SMTP Configuration: copiar este archivo a Web.Smtp.config y completar SmtpPass (NO versionar). -->
+  <add key="SmtpHost" value="smtp.gmail.com" />
+  <add key="SmtpPort" value="587" />
+  <add key="SmtpUser" value="andresaldean11@gmail.com" />
+  <add key="SmtpPass" value="" />
+  <add key="SmtpSsl" value="true" />
+  <add key="SmtpFromEmail" value="andresaldean11@gmail.com" />
+  <add key="SmtpFromName" value="EventHub" />
+
+  <!-- App Configuration -->
+  <add key="AppBaseUrl" value="https://localhost:44353" />
+</appSettings>

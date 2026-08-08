@@ -43,8 +43,15 @@ Desktop.ini
 # Graphify
 graphify-out/
 
+# Obsidian vault (track config, ignore personal workspace state)
+docs/.obsidian/workspace.json
+docs/.obsidian/workspace-mobile.json
+
 # SQL backups
 *.sql.bak
 
 # Runtime uploads
 EventHub.01.Web/Content/uploads/
+
+# SMTP credentials (local, not versioned)
+EventHub.01.Web/Web.Smtp.config

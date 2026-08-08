@@ -1,3 +1,14 @@
+---
+title: EventProduction Hub - Documento Maestro
+tags:
+  - project
+  - eventhub
+  - maestro
+tipo: maestro
+proyecto: EventHub
+version: "1.0"
+---
+
 # 📊 EventProduction Hub - Documento Maestro para Agentes IA
 ## Proyecto Integrador - Sistema Integral de Gestión de Eventos
 

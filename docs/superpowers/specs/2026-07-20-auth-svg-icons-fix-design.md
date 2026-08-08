@@ -1,3 +1,11 @@
+---
+tipo: spec
+proyecto: EventHub
+modulo: Seguridad
+fecha: 2026-07-20
+estado: Completado
+---
+
 # Auth SVG Icon Sizing Fix
 
 ## Problem
